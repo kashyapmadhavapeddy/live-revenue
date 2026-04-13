@@ -4,206 +4,181 @@ import plotly.graph_objects as go
 import random, time
 from datetime import datetime, timedelta
 
-# ===============================
-# CONFIG
-# ===============================
-st.set_page_config(layout="wide", page_title="⚡ War Room Pro")
+st.set_page_config(layout="wide", page_title="⚡ Analytics War Room")
 
-# REALISTIC PRODUCTS
+# =========================
+# REAL DATA
+# =========================
 PRODUCTS = [
     ("Laptop", 40000, 90000),
     ("Phone", 10000, 60000),
     ("Shoes", 2000, 8000),
     ("Watch", 3000, 25000),
     ("Chair", 6000, 20000),
-    ("Bag", 1500, 6000),
-    ("Tablet", 15000, 50000),
 ]
 
 CITIES = ["Hyderabad","Mumbai","Delhi","Bangalore","Chennai"]
 
-# ===============================
+# =========================
 # SESSION
-# ===============================
+# =========================
 if "sales" not in st.session_state:
     st.session_state.sales = []
 if "last" not in st.session_state:
     st.session_state.last = time.time()
 
-# ===============================
-# GENERATE REALISTIC SALE
-# ===============================
 def generate_sale():
-    product, lo, hi = random.choice(PRODUCTS)
-    price = random.randint(lo, hi)
+    p, lo, hi = random.choice(PRODUCTS)
     return {
         "time": datetime.now(),
-        "product": product,
+        "product": p,
         "city": random.choice(CITIES),
-        "price": price,
-        "qty": random.randint(1,3)
+        "price": random.randint(lo, hi)
     }
 
-# ADD EVERY 30s
+# 30 sec logic
 if time.time() - st.session_state.last > 30:
     st.session_state.sales.append(generate_sale())
     st.session_state.last = time.time()
 
-# ===============================
-# DATAFRAME SAFE
-# ===============================
 df = pd.DataFrame(st.session_state.sales)
 
 if df.empty:
-    df = pd.DataFrame(columns=["time","product","city","price","qty"])
+    df = pd.DataFrame(columns=["time","product","city","price"])
 
 if not df.empty:
     df["time"] = pd.to_datetime(df["time"])
 
-# ===============================
+# =========================
 # METRICS
-# ===============================
-total_rev = df["price"].sum()
+# =========================
+total = df["price"].sum()
 orders = len(df)
 
-last_5m = df[df["time"] > datetime.now() - timedelta(minutes=5)]
-velocity = len(last_5m)
+velocity = len(df[df["time"] > datetime.now() - timedelta(minutes=5)])
 
-# ===============================
-# UI STYLE (UPGRADED)
-# ===============================
+top_city = df.groupby("city")["price"].sum().idxmax() if not df.empty else "-"
+
+# =========================
+# UI STYLE (MAIN MAGIC)
+# =========================
 st.markdown("""
 <style>
-body {background:#020617;color:white}
+body {background:#0b1020;color:white}
 
+/* KPI CARDS */
 .kpi {
-    background:#0f172a;
-    padding:15px;
-    border-radius:12px;
-    border:1px solid #1e293b;
-    box-shadow:0 0 10px #22d3ee22;
-    animation: glow 2s infinite alternate;
+    padding:18px;
+    border-radius:14px;
+    color:white;
+    font-weight:600;
 }
-@keyframes glow {
-    from {box-shadow:0 0 5px #22d3ee22;}
-    to {box-shadow:0 0 15px #22d3ee66;}
-}
+.kpi h3 {margin:0;font-size:14px;opacity:0.8}
+.kpi h1 {margin:5px 0;font-size:26px}
+
+/* gradients */
+.g1 {background:linear-gradient(135deg,#667eea,#764ba2)}
+.g2 {background:linear-gradient(135deg,#f093fb,#f5576c)}
+.g3 {background:linear-gradient(135deg,#43e97b,#38f9d7)}
+.g4 {background:linear-gradient(135deg,#fa709a,#fee140)}
 
 .card {
-    background:#0f172a;
-    border-radius:12px;
+    background:#121a33;
     padding:15px;
+    border-radius:12px;
     border:1px solid #1e293b;
 }
 
-.tag {
-    background:#22d3ee;
-    color:black;
-    padding:3px 8px;
-    border-radius:6px;
-    font-size:10px;
+/* transaction card */
+.tx {
+    background:#121a33;
+    padding:10px;
+    border-radius:10px;
+    margin-bottom:8px;
+    border-left:4px solid #22d3ee;
 }
 </style>
 """, unsafe_allow_html=True)
 
-# ===============================
-# HEADER
-# ===============================
-st.title("⚡ REVENUE WAR ROOM PRO")
-
-# ===============================
-# KPI ROW
-# ===============================
+# =========================
+# KPI ROW (GRADIENT)
+# =========================
 c1,c2,c3,c4 = st.columns(4)
 
-c1.markdown(f'<div class="kpi">💰 Revenue<br><b>₹{total_rev:,.0f}</b></div>', unsafe_allow_html=True)
-c2.markdown(f'<div class="kpi">📦 Orders<br><b>{orders}</b></div>', unsafe_allow_html=True)
-c3.markdown(f'<div class="kpi">⚡ Velocity<br><b>{velocity}</b></div>', unsafe_allow_html=True)
+c1.markdown(f'<div class="kpi g1"><h3>Revenue</h3><h1>₹{total:,.0f}</h1></div>', unsafe_allow_html=True)
+c2.markdown(f'<div class="kpi g2"><h3>Orders</h3><h1>{orders}</h1></div>', unsafe_allow_html=True)
+c3.markdown(f'<div class="kpi g3"><h3>Velocity</h3><h1>{velocity}</h1></div>', unsafe_allow_html=True)
+c4.markdown(f'<div class="kpi g4"><h3>Top City</h3><h1>{top_city}</h1></div>', unsafe_allow_html=True)
 
-top_city = df.groupby("city")["price"].sum().idxmax() if not df.empty else "-"
-c4.markdown(f'<div class="kpi">🏆 Top City<br><b>{top_city}</b></div>', unsafe_allow_html=True)
-
-# ===============================
+# =========================
 # MAIN GRID
-# ===============================
+# =========================
 left, right = st.columns([2,1])
 
 # -------- CHART
 with left:
-    st.subheader("📊 Revenue Timeline")
+    st.markdown("### Revenue")
 
     if not df.empty:
         df["min"] = df["time"].dt.strftime("%H:%M")
         chart = df.groupby("min")["price"].sum()
 
         fig = go.Figure()
-        fig.add_trace(go.Scatter(
+        fig.add_trace(go.Bar(
             x=chart.index,
-            y=chart.values,
-            fill='tozeroy',
-            line=dict(width=3)
+            y=chart.values
         ))
+
+        fig.update_layout(
+            plot_bgcolor="#121a33",
+            paper_bgcolor="#121a33",
+            font=dict(color="white")
+        )
+
         st.plotly_chart(fig, use_container_width=True)
 
-# -------- SIDE PANEL
+# -------- INSIGHTS PANEL
 with right:
-    st.subheader("🎯 Demand Status")
+    st.markdown("### Insights")
 
-    intensity = min(velocity * 10, 100)
-    st.progress(intensity)
-
-    if intensity > 70:
-        st.success("🔥 HIGH DEMAND")
-    elif intensity > 30:
-        st.warning("⚡ MEDIUM")
-    else:
-        st.error("❄ LOW")
-
-    st.subheader("🤖 Action")
-
-    if intensity > 70:
-        st.success("Scale Ads + Inventory")
-    else:
-        st.warning("Run Promotions")
-
-# ===============================
-# CITY GRID
-# ===============================
-st.subheader("🌍 City Command")
-
-cols = st.columns(len(CITIES))
-
-for i, city in enumerate(CITIES):
-    city_df = df[df["city"] == city]
-
-    rev = city_df["price"].sum()
-
-    cols[i].markdown(f"""
+    st.markdown("""
     <div class="card">
-    <b>{city}</b><br>
-    ₹{rev:,.0f}
+    🔥 Demand rising in Bangalore<br>
+    ⚡ Mumbai stable<br>
+    ⚠ Delhi needs promotion
     </div>
     """, unsafe_allow_html=True)
 
-# ===============================
-# TRANSACTION CARDS (REPLACED FEED)
-# ===============================
-st.subheader("💳 Recent Transactions")
+# =========================
+# LOWER GRID
+# =========================
+b1, b2 = st.columns([1,1])
 
-for _, s in df.tail(5).iloc[::-1].iterrows():
-    tag = ""
+# ---- CITY CARDS
+with b1:
+    st.markdown("### Cities")
 
-    if s["price"] > 40000:
-        tag = '<span class="tag">HIGH VALUE</span>'
+    for city in CITIES:
+        rev = df[df["city"] == city]["price"].sum()
+        st.markdown(f"""
+        <div class="card">
+        {city} — ₹{rev:,.0f}
+        </div>
+        """, unsafe_allow_html=True)
 
-    st.markdown(f"""
-    <div class="card">
-    ⚡ {s['product']} — ₹{s['price']:,.0f} ({s['city']}) {tag}
-    </div>
-    """, unsafe_allow_html=True)
+# ---- TRANSACTIONS
+with b2:
+    st.markdown("### Transactions")
 
-# ===============================
+    for _, s in df.tail(5).iloc[::-1].iterrows():
+        st.markdown(f"""
+        <div class="tx">
+        {s['product']} — ₹{s['price']:,.0f} ({s['city']})
+        </div>
+        """, unsafe_allow_html=True)
+
+# =========================
 # AUTO REFRESH
-# ===============================
+# =========================
 time.sleep(5)
 st.rerun()
