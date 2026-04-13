@@ -1,33 +1,3 @@
-new message from Homa Varshini  Show  Ignore 
-
-Skip to content
-Using Gmail with screen readers
-Enable desktop notifications for Gmail.
-   OK  No, thanks
-1 of 9,949
-(no subject)
-Inbox
-
-Kashyap
-Attachments
-Mon 16 Feb, 14:45
- 
-41
-
-Kashyap
-12:17 (7 minutes ago)
-import streamlit as st import pandas as pd import plotly.graph_objects as go import requests, random, time from datetime import datetime, timedelta st.set_page_
-
-Homa Varshini
-Attachments
-12:24 (0 minutes ago)
-to me
-
-...
-
-[Message clipped]  View entire message
- One attachment
-  •  Scanned by Gmail
 """
 ╔══════════════════════════════════════════════════════════════════╗
 ║  ⚡ REVENUE PULSE — SALES WAR ROOM COMMAND CENTER               ║
@@ -35,11 +5,7 @@ to me
 ║  Deps: pip install streamlit pandas plotly requests              ║
 ╚══════════════════════════════════════════════════════════════════╝
 
-BUG FIXED: AttributeError on st.session_state.last_add
-ROOT CAUSE: Session-state keys were checked before being initialised.
-FIX: All keys are seeded inside a single `_init_session_state()`
-     function that is called unconditionally at the top of every run,
-     using `.setdefault()` so existing values are never overwritten.
+
 """
 
 import streamlit as st
@@ -63,7 +29,6 @@ st.set_page_config(
 # ══════════════════════════════════════════════════════════
 #  CONSTANTS
 # ══════════════════════════════════════════════════════════
-WEATHER_API_KEY = "37b1806d95a16313402bc8a89f54a3a6"
 
 PRODUCTS = [
     ("UltraBook Pro",       "Electronics",  45000, 85000),
@@ -994,5 +959,3 @@ st.markdown("""
 # ══════════════════════════════════════════════════════════
 time.sleep(5)
 st.rerun()
-war_room_dashboard.py
-Displaying war_room_dashboard.py.
