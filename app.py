@@ -1,256 +1,187 @@
-# ==========================================
-# ⚡ REVENUE WAR ROOM — ENTERPRISE VERSION
-# ==========================================
-
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 import random, time
 from datetime import datetime, timedelta
 
-# ==========================================
-# CONFIG
-# ==========================================
-st.set_page_config(
-    page_title="⚡ War Room Enterprise",
-    layout="wide",
-    initial_sidebar_state="collapsed"
-)
+# ================= CONFIG =================
+st.set_page_config(layout="wide", page_title="⚡ War Room X")
 
-# ==========================================
-# DATA MODEL
-# ==========================================
+# ================= DATA =================
 PRODUCTS = [
-    ("Laptop","Electronics",50000,120000),
-    ("Phone","Electronics",12000,80000),
-    ("Shoes","Apparel",2500,9000),
-    ("Watch","Accessories",3000,25000),
-    ("Chair","Furniture",7000,20000),
-    ("Desk","Furniture",15000,50000),
+    ("Laptop", 50000, 120000),
+    ("Phone", 12000, 80000),
+    ("Shoes", 2500, 9000),
+    ("Watch", 3000, 25000),
+    ("Chair", 7000, 20000),
 ]
 
-CITIES = [
-    ("Hyderabad","South"),
-    ("Mumbai","West"),
-    ("Delhi","North"),
-    ("Bangalore","South"),
-    ("Chennai","South"),
-]
+CITIES = ["Hyderabad","Mumbai","Delhi","Bangalore","Chennai"]
 
-# ==========================================
-# SESSION STATE
-# ==========================================
 ss = st.session_state
 ss.setdefault("sales", [])
+ss.setdefault("last", 0)
 ss.setdefault("oid", 1000)
-ss.setdefault("last_add", 0)
 
-# ==========================================
-# SALE GENERATOR
-# ==========================================
-def generate_sale(ts=None):
-    name, cat, lo, hi = random.choice(PRODUCTS)
-    city, region = random.choice(CITIES)
-
+# ================= GENERATOR =================
+def new_sale():
+    name, lo, hi = random.choice(PRODUCTS)
     price = random.randint(lo, hi)
-    qty = random.choices([1,2,3],[60,30,10])[0]
-
     return {
-        "time": ts or datetime.now(),
         "order": f"ORD-{ss.oid}",
         "product": name,
-        "category": cat,
-        "price": price,
-        "qty": qty,
-        "city": city,
-        "region": region,
-        "revenue": price * qty
+        "city": random.choice(CITIES),
+        "revenue": price,
+        "time": datetime.now()
     }
 
-# ==========================================
-# INITIAL SEED
-# ==========================================
 if not ss.sales:
-    now = datetime.now()
-    for _ in range(60):
-        ss.sales.append(generate_sale(now - timedelta(minutes=random.randint(1,180))))
+    for _ in range(50):
+        ss.sales.append(new_sale())
 
-# ==========================================
-# LIVE ADD
-# ==========================================
-if time.time() - ss.last_add > 30:
-    ss.sales.append(generate_sale())
-    ss.last_add = time.time()
+if time.time() - ss.last > 30:
+    ss.sales.append(new_sale())
+    ss.last = time.time()
 
-# ==========================================
-# DATAFRAME SAFE
-# ==========================================
+# ================= DF =================
 df = pd.DataFrame(ss.sales)
 
-required_cols = ["order","product","city","revenue","time"]
-for col in required_cols:
-    if col not in df.columns:
-        df[col] = None
+if df.empty:
+    df = pd.DataFrame(columns=["order","product","city","revenue","time"])
 
 df["time"] = pd.to_datetime(df["time"])
 
-# ==========================================
-# METRICS
-# ==========================================
-now = datetime.now()
-
-total_rev = df["revenue"].sum()
+# ================= METRICS =================
+total = df["revenue"].sum()
 orders = len(df)
 
-last_30 = df[df["time"] > now - timedelta(minutes=30)]
-prev_30 = df[
-    (df["time"] > now - timedelta(minutes=60)) &
-    (df["time"] <= now - timedelta(minutes=30))
-]
+recent = df[df["time"] > datetime.now() - timedelta(minutes=30)]
+velocity = len(recent)
 
-velocity = len(last_30)
-trend = velocity - len(prev_30)
+trend = velocity - len(df[(df["time"] > datetime.now()-timedelta(minutes=60)) &
+                          (df["time"] <= datetime.now()-timedelta(minutes=30))])
 
 top_city = df.groupby("city")["revenue"].sum().idxmax()
-top_product = df.groupby("product")["revenue"].sum().idxmax()
-top_region = df.groupby("region")["revenue"].sum().idxmax()
 
-demand_index = min(100, velocity * 3 + max(trend,0)*5)
+demand = min(100, velocity * 3 + max(trend,0)*5)
 
-# ==========================================
-# UI DESIGN SYSTEM (CLEAN + CONSISTENT)
-# ==========================================
+# ================= UI CSS (EXTREME) =================
 st.markdown("""
 <style>
 
 .stApp {
-    background: linear-gradient(135deg,#020617,#0f172a);
-}
-
-/* HERO */
-.hero {
-    padding:20px;
-    border-bottom:1px solid #1e293b;
+    background: radial-gradient(circle at 30% 20%, #1e293b, #020617);
 }
 
 /* KPI */
 .kpi {
-    background:#0f172a;
-    border:1px solid #1e293b;
+    padding:20px;
+    border-radius:16px;
+    background:rgba(255,255,255,0.05);
+    backdrop-filter: blur(10px);
+    border:1px solid rgba(255,255,255,0.1);
+    transition:0.3s;
+}
+.kpi:hover {
+    transform: translateY(-6px);
+    box-shadow:0 20px 40px rgba(0,0,0,0.6);
+}
+
+/* PANEL */
+.panel {
+    background:rgba(255,255,255,0.04);
+    border-radius:16px;
     padding:15px;
-    border-radius:12px;
+    border:1px solid rgba(255,255,255,0.08);
 }
 
-/* SECTION LABEL */
-.sec {
-    font-size:12px;
-    letter-spacing:2px;
-    color:#22d3ee;
-    margin-top:20px;
+/* GLOW ANIMATION */
+.glow {
+    animation: glow 2s infinite alternate;
 }
-
-/* CARD */
-.card {
-    background:#0f172a;
-    border:1px solid #1e293b;
-    border-radius:10px;
-    padding:12px;
-}
-
-.ticker {
-    overflow:hidden;
-    white-space:nowrap;
-}
-.ticker span {
-    display:inline-block;
-    padding-right:40px;
-    animation: scroll 25s linear infinite;
-}
-@keyframes scroll {
-    0%{transform:translateX(100%)}
-    100%{transform:translateX(-100%)}
+@keyframes glow {
+    from {box-shadow:0 0 5px #22d3ee33;}
+    to {box-shadow:0 0 20px #22d3ee88;}
 }
 
 </style>
 """, unsafe_allow_html=True)
 
-# ==========================================
-# HERO
-# ==========================================
-st.markdown(f"""
-<div class="hero">
-<h2>⚡ REVENUE WAR ROOM ENTERPRISE</h2>
-LIVE · {orders} ORDERS · DEMAND INDEX: {demand_index}
-</div>
-""", unsafe_allow_html=True)
+# ================= HEADER =================
+st.markdown("## ⚡ REVENUE WAR ROOM X")
 
-# ==========================================
-# KPI ROW
-# ==========================================
-k1,k2,k3,k4,k5 = st.columns(5)
+# ================= KPI =================
+c1,c2,c3,c4 = st.columns(4)
 
-k1.metric("Revenue", f"₹{total_rev:,.0f}")
-k2.metric("Orders", orders)
-k3.metric("Velocity", velocity)
-k4.metric("Top City", top_city)
-k5.metric("Top Product", top_product)
+c1.markdown(f'<div class="kpi glow">💰 Revenue<br><h2>₹{total:,.0f}</h2></div>', unsafe_allow_html=True)
+c2.markdown(f'<div class="kpi">📦 Orders<br><h2>{orders}</h2></div>', unsafe_allow_html=True)
+c3.markdown(f'<div class="kpi">⚡ Velocity<br><h2>{velocity}</h2></div>', unsafe_allow_html=True)
+c4.markdown(f'<div class="kpi">🏆 Top City<br><h2>{top_city}</h2></div>', unsafe_allow_html=True)
 
-# ==========================================
-# TICKER
-# ==========================================
-tick = "".join([
-    f"<span>⚡ {s.get('order','--')} {s.get('product','')} ₹{int(s.get('revenue',0)):,} {s.get('city','')}</span>"
-    for s in ss.sales[-12:]
-])
-st.markdown(f'<div class="ticker">{tick}</div>', unsafe_allow_html=True)
-
-# ==========================================
-# MAIN GRID
-# ==========================================
+# ================= GRID =================
 left, right = st.columns([2,1])
 
+# -------- CHART
 with left:
-    st.markdown('<div class="sec">REVENUE FLOW</div>', unsafe_allow_html=True)
+    st.markdown("### 📊 Revenue Flow")
 
-    df["bucket"] = df["time"].dt.floor("10min")
-    rt = df.groupby("bucket")["revenue"].sum()
+    df["min"] = df["time"].dt.strftime("%H:%M")
+    chart = df.groupby("min")["revenue"].sum()
 
     fig = go.Figure()
-    fig.add_trace(go.Scatter(x=rt.index,y=rt.values,fill='tozeroy'))
+    fig.add_trace(go.Scatter(
+        x=chart.index,
+        y=chart.values,
+        fill='tozeroy',
+        line=dict(width=3)
+    ))
+
+    fig.update_layout(
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+        font=dict(color="white")
+    )
+
     st.plotly_chart(fig, use_container_width=True)
 
+# -------- COMMAND RADAR (NEW FEATURE)
 with right:
-    st.markdown('<div class="sec">COMMAND PANEL</div>', unsafe_allow_html=True)
+    st.markdown("### 🧠 Command Radar")
 
-    st.progress(demand_index)
+    fig = go.Figure(go.Indicator(
+        mode="gauge+number",
+        value=demand,
+        title={'text': "Demand Index"},
+        gauge={
+            'axis': {'range': [0, 100]},
+            'bar': {'color': "cyan"}
+        }
+    ))
 
-    st.info(f"Region Leader: {top_region}")
+    st.plotly_chart(fig, use_container_width=True)
 
-    if trend > 5:
-        st.success("🚀 Surge detected")
-    elif trend < -5:
-        st.error("⚠ Drop detected")
+    if demand > 70:
+        st.success("🚀 SCALE NOW")
+    elif demand > 30:
+        st.warning("⚡ MONITOR")
+    else:
+        st.error("⚠ BOOST SALES")
 
-# ==========================================
-# CITY GRID
-# ==========================================
-st.markdown('<div class="sec">CITY PERFORMANCE</div>', unsafe_allow_html=True)
+# ================= CITY GRID =================
+st.markdown("### 🌍 City Command")
 
 cols = st.columns(len(CITIES))
-for i,(city,_) in enumerate(CITIES):
+
+for i, city in enumerate(CITIES):
     rev = df[df["city"]==city]["revenue"].sum()
-    cols[i].metric(city, f"₹{rev:,.0f}")
 
-# ==========================================
-# PRODUCT MOMENTUM
-# ==========================================
-st.markdown('<div class="sec">PRODUCT MOMENTUM</div>', unsafe_allow_html=True)
+    cols[i].markdown(f"""
+    <div class="panel">
+    <b>{city}</b><br>
+    ₹{rev:,.0f}
+    </div>
+    """, unsafe_allow_html=True)
 
-pm = df.groupby("product")["revenue"].sum().sort_values(ascending=False)
-st.bar_chart(pm)
-
-# ==========================================
-# AUTO REFRESH
-# ==========================================
+# ================= AUTO REFRESH =================
 time.sleep(5)
 st.rerun()
