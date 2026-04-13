@@ -1,5 +1,5 @@
 # ==========================================
-# ⚡ REVENUE WAR ROOM — PRO UI (FINAL)
+# ⚡ WAR ROOM — EXTREME UI MODE
 # ==========================================
 
 import streamlit as st
@@ -10,9 +10,7 @@ from datetime import datetime, timedelta
 
 st.set_page_config(layout="wide")
 
-# =========================
-# DATA ENGINE
-# =========================
+# ================= DATA =================
 PRODUCTS = [
     ("Laptop", 50000, 120000),
     ("Phone", 12000, 80000),
@@ -41,7 +39,7 @@ def new_sale(ts=None):
 # seed
 if not ss.sales:
     now = datetime.now()
-    for _ in range(70):
+    for _ in range(80):
         ss.sales.append(new_sale(now - timedelta(minutes=random.randint(1,120))))
 
 # live
@@ -52,9 +50,7 @@ if time.time() - ss.last > 30:
 df = pd.DataFrame(ss.sales)
 df["time"] = pd.to_datetime(df["time"])
 
-# =========================
-# METRICS
-# =========================
+# ================= METRICS =================
 total = df["revenue"].sum()
 orders = len(df)
 
@@ -64,107 +60,75 @@ velocity = len(last_30)
 top_city = df.groupby("city")["revenue"].sum().idxmax()
 top_product = df.groupby("product")["revenue"].sum().idxmax()
 
-# =========================
-# UI SYSTEM
-# =========================
+# ================= UI =================
 st.markdown("""
 <style>
 
-/* BACKGROUND */
+/* BACKGROUND ANIMATION */
 .stApp {
-    background:
-        radial-gradient(circle at top left, #0f172a, #020617),
-        linear-gradient(to bottom, #020617, #020617);
+    background: radial-gradient(circle at center, #0f172a, #020617);
 }
 
-/* GLOBAL SPACING */
-.block-container {
-    padding: 2rem 3rem;
+/* CORE */
+.core {
+    text-align:center;
+    padding:40px;
+    border-radius:20px;
+    border:1px solid #22d3ee33;
+    animation: pulse 2s infinite;
 }
-
-/* HERO */
-.hero {
-    padding:20px;
-    border-radius:16px;
-    background: linear-gradient(135deg,#020617,#0f172a);
-    border:1px solid #1e293b;
+@keyframes pulse {
+    0% {box-shadow:0 0 10px #22d3ee44;}
+    50% {box-shadow:0 0 40px #22d3eeaa;}
+    100% {box-shadow:0 0 10px #22d3ee44;}
 }
 
 /* KPI */
 .kpi {
-    padding:18px;
-    border-radius:14px;
-    color:white;
-    font-weight:600;
-    transition:0.3s;
+    background:#0f172a;
+    border:1px solid #1e293b;
+    border-radius:12px;
+    padding:15px;
+    text-align:center;
 }
-.kpi:hover {
-    transform: translateY(-5px);
-}
-
-.g1 {background:linear-gradient(135deg,#667eea,#764ba2)}
-.g2 {background:linear-gradient(135deg,#f093fb,#f5576c)}
-.g3 {background:linear-gradient(135deg,#43e97b,#38f9d7)}
-.g4 {background:linear-gradient(135deg,#fa709a,#fee140)}
 
 /* PANEL */
 .panel {
-    background: rgba(255,255,255,0.03);
+    background:rgba(255,255,255,0.03);
+    border:1px solid rgba(255,255,255,0.08);
     border-radius:14px;
-    padding:16px;
-    border:1px solid rgba(255,255,255,0.06);
-}
-
-/* SECTION TITLE */
-.sec {
-    font-size:12px;
-    color:#22d3ee;
-    letter-spacing:2px;
-    margin-bottom:8px;
+    padding:15px;
 }
 
 </style>
 """, unsafe_allow_html=True)
 
-# =========================
-# HERO
-# =========================
+# ================= CORE =================
 st.markdown(f"""
-<div class="hero">
-<h2>⚡ REVENUE WAR ROOM</h2>
-LIVE ANALYTICS · {orders} ORDERS
+<div class="core">
+<h1>₹{total:,.0f}</h1>
+<p>LIVE REVENUE CORE</p>
 </div>
 """, unsafe_allow_html=True)
 
-# =========================
-# KPI STRIP
-# =========================
+# ================= KPI =================
 c1,c2,c3,c4 = st.columns(4)
 
-c1.markdown(f'<div class="kpi g1">Revenue<br><h2>₹{total:,.0f}</h2></div>', unsafe_allow_html=True)
-c2.markdown(f'<div class="kpi g2">Orders<br><h2>{orders}</h2></div>', unsafe_allow_html=True)
-c3.markdown(f'<div class="kpi g3">Velocity<br><h2>{velocity}</h2></div>', unsafe_allow_html=True)
-c4.markdown(f'<div class="kpi g4">Top City<br><h2>{top_city}</h2></div>', unsafe_allow_html=True)
+c1.markdown(f'<div class="kpi">Orders<br><h3>{orders}</h3></div>', unsafe_allow_html=True)
+c2.markdown(f'<div class="kpi">Velocity<br><h3>{velocity}</h3></div>', unsafe_allow_html=True)
+c3.markdown(f'<div class="kpi">Top City<br><h3>{top_city}</h3></div>', unsafe_allow_html=True)
+c4.markdown(f'<div class="kpi">Top Product<br><h3>{top_product}</h3></div>', unsafe_allow_html=True)
 
-# =========================
-# MAIN GRID
-# =========================
+# ================= GRID =================
 left, right = st.columns([2,1])
 
-# -------- CHART
+# chart
 with left:
-    st.markdown('<div class="sec">REVENUE FLOW</div>', unsafe_allow_html=True)
-
     df["min"] = df["time"].dt.strftime("%H:%M")
     chart = df.groupby("min")["revenue"].sum()
 
     fig = go.Figure()
-    fig.add_trace(go.Scatter(
-        x=chart.index,
-        y=chart.values,
-        fill='tozeroy',
-        line=dict(width=3)
-    ))
+    fig.add_trace(go.Scatter(x=chart.index,y=chart.values,fill='tozeroy'))
 
     fig.update_layout(
         plot_bgcolor="rgba(0,0,0,0)",
@@ -174,40 +138,16 @@ with left:
 
     st.plotly_chart(fig, use_container_width=True)
 
-# -------- SIDE PANEL
+# insights
 with right:
-    st.markdown('<div class="sec">INSIGHTS</div>', unsafe_allow_html=True)
-
     st.markdown(f"""
     <div class="panel">
-    🔥 Top Product: {top_product}<br>
-    🌍 Top City: {top_city}<br>
-    ⚡ Orders (30m): {velocity}
+    🔥 {top_product} trending<br>
+    🌍 {top_city} leading<br>
+    ⚡ {velocity} recent orders
     </div>
     """, unsafe_allow_html=True)
 
-# =========================
-# LOWER GRID
-# =========================
-b1,b2 = st.columns([1,1])
-
-# -------- CITY
-with b1:
-    st.markdown('<div class="sec">CITY PERFORMANCE</div>', unsafe_allow_html=True)
-
-    for city in CITIES:
-        rev = df[df["city"]==city]["revenue"].sum()
-        st.markdown(f'<div class="panel">{city} — ₹{rev:,.0f}</div>', unsafe_allow_html=True)
-
-# -------- PRODUCTS
-with b2:
-    st.markdown('<div class="sec">PRODUCT LEADERBOARD</div>', unsafe_allow_html=True)
-
-    top = df.groupby("product")["revenue"].sum().sort_values(ascending=False)
-    st.bar_chart(top)
-
-# =========================
-# AUTO REFRESH
-# =========================
+# ================= AUTO =================
 time.sleep(5)
 st.rerun()
