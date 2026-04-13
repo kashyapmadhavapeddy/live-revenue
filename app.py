@@ -15,6 +15,7 @@ import requests
 import random
 import time
 from datetime import datetime, timedelta
+WEATHER_API_KEY = st.secrets.get("OPENWEATHER_API_KEY", "")
 
 # ══════════════════════════════════════════════════════════
 #  PAGE CONFIG
@@ -143,7 +144,8 @@ def _fmt_inr(v: float) -> str:
 
 
 def _fetch_weather() -> None:
-    """Call OpenWeatherMap for all 8 cities; cache for 10 min."""
+    if not WEATHER_API_KEY:
+        return
     for city, _ in CITIES:
         try:
             resp = requests.get(
@@ -957,5 +959,4 @@ st.markdown("""
 # ══════════════════════════════════════════════════════════
 #  AUTO-REFRESH  (keeps dashboard alive without manual click)
 # ══════════════════════════════════════════════════════════
-time.sleep(5)
-st.rerun()
+st.markdown('<meta http-equiv="refresh" content="5">', unsafe_allow_html=True)
