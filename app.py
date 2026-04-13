@@ -7,68 +7,54 @@ from datetime import datetime, timedelta
 # ===============================
 # CONFIG
 # ===============================
-st.set_page_config(layout="wide", page_title="⚡ Revenue War Room")
+st.set_page_config(layout="wide", page_title="⚡ War Room")
 
 PRODUCTS = ["Laptop","Shoes","Watch","Phone","Bag","Tablet","Chair"]
 CITIES = ["Hyderabad","Mumbai","Delhi","Bangalore","Chennai"]
 
 # ===============================
-# SESSION STATE
+# SESSION
 # ===============================
 if "sales" not in st.session_state:
     st.session_state.sales = []
-
 if "last" not in st.session_state:
     st.session_state.last = time.time()
 
 # ===============================
-# SALES GENERATOR
+# GENERATE SALE (30 SEC)
 # ===============================
 def generate_sale():
     return {
         "time": datetime.now(),
         "product": random.choice(PRODUCTS),
         "city": random.choice(CITIES),
-        "price": random.randint(1000,50000),
+        "price": random.randint(2000,50000),
         "qty": random.randint(1,5)
     }
 
-# add new sale every 2 sec
-if time.time() - st.session_state.last > 2:
+if time.time() - st.session_state.last > 30:
     st.session_state.sales.append(generate_sale())
     st.session_state.last = time.time()
 
 # ===============================
-# DATAFRAME (FIXED)
+# DATAFRAME FIX
 # ===============================
 df = pd.DataFrame(st.session_state.sales)
 
-# FIX: ensure structure always exists
 if df.empty:
     df = pd.DataFrame(columns=["time","product","city","price","qty"])
 
-# ensure datetime
 if not df.empty:
     df["time"] = pd.to_datetime(df["time"])
 
 # ===============================
-# METRICS SAFE CALC
+# METRICS
 # ===============================
-total_rev = df["price"].sum() if not df.empty else 0
+total_rev = df["price"].sum()
 orders = len(df)
 
-if not df.empty:
-    last_30s = df[df["time"] > datetime.now() - timedelta(seconds=30)]
-    prev_30s = df[
-        (df["time"] > datetime.now() - timedelta(seconds=60)) &
-        (df["time"] <= datetime.now() - timedelta(seconds=30))
-    ]
-else:
-    last_30s = pd.DataFrame()
-    prev_30s = pd.DataFrame()
-
-velocity = len(last_30s)
-trend = velocity - len(prev_30s)
+last_5m = df[df["time"] > datetime.now() - timedelta(minutes=5)]
+velocity = len(last_5m)
 
 # ===============================
 # UI STYLE
@@ -82,166 +68,116 @@ body {background:#020617;color:white}
     padding:15px;
     border-radius:12px;
 }
-.glow {box-shadow:0 0 12px #22d3ee33}
-.alert {padding:10px;border-radius:8px;margin-bottom:6px}
-.green {background:#064e3b}
-.red {background:#7f1d1d}
-.yellow {background:#78350f}
+.title {
+    font-size:28px;
+    font-weight:bold;
+}
+.glow {box-shadow:0 0 15px #22d3ee22}
 </style>
 """, unsafe_allow_html=True)
 
 # ===============================
-# HEADER
+# HERO
 # ===============================
-st.title("⚡ REVENUE WAR ROOM")
+st.markdown('<div class="title">⚡ REVENUE WAR ROOM</div>', unsafe_allow_html=True)
 
 # ===============================
 # KPI ROW
 # ===============================
 c1,c2,c3,c4 = st.columns(4)
-
 c1.metric("💰 Revenue", f"₹{total_rev:,.0f}")
 c2.metric("📦 Orders", orders)
-c3.metric("⚡ Velocity (30s)", velocity)
-c4.metric("📈 Trend", trend)
+c3.metric("⚡ 5m Velocity", velocity)
+
+top_city = df.groupby("city")["price"].sum().idxmax() if not df.empty else "-"
+c4.metric("🏆 Top City", top_city)
 
 # ===============================
-# SALES INTENSITY
+# MAIN GRID
 # ===============================
-st.subheader("🎯 Sales Intensity")
+left, right = st.columns([2,1])
 
-intensity = min(velocity * 2, 100)
-st.progress(intensity)
+# ---------------- LEFT (CHART)
+with left:
+    st.markdown("### 📊 Revenue Timeline")
 
-if intensity > 70:
-    st.success("🔥 HIGH DEMAND")
-elif intensity > 30:
-    st.warning("⚡ MEDIUM DEMAND")
-else:
-    st.error("❄ LOW DEMAND")
+    if not df.empty:
+        df["min"] = df["time"].dt.strftime("%H:%M")
+        chart = df.groupby("min")["price"].sum()
+
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(
+            x=chart.index,
+            y=chart.values,
+            fill='tozeroy',
+            line=dict(width=3)
+        ))
+        st.plotly_chart(fig, use_container_width=True)
+
+# ---------------- RIGHT (PULSE + DECISION)
+with right:
+    st.markdown("### 🎯 Demand Pulse")
+
+    intensity = min(velocity * 10, 100)
+    st.progress(intensity)
+
+    if intensity > 70:
+        st.success("🔥 HIGH")
+    elif intensity > 30:
+        st.warning("⚡ MEDIUM")
+    else:
+        st.error("❄ LOW")
+
+    st.markdown("### 🤖 Decision")
+
+    if intensity > 70:
+        st.success("Scale Ads + Inventory")
+    elif intensity < 20:
+        st.warning("Run Discounts")
 
 # ===============================
-# CITY COMMAND CENTER
+# CITY GRID
 # ===============================
-st.subheader("🌍 City Command Center")
+st.markdown("### 🌍 City War Grid")
 
 cols = st.columns(len(CITIES))
 
 for i, city in enumerate(CITIES):
-    city_df = df[df["city"] == city] if not df.empty else pd.DataFrame()
+    city_df = df[df["city"] == city]
 
-    rev = city_df["price"].sum() if not city_df.empty else 0
+    rev = city_df["price"].sum()
     count = len(city_df)
-
-    demand = "LOW"
-    if count > 10:
-        demand = "HIGH"
-    elif count > 5:
-        demand = "MEDIUM"
-
-    action = "Maintain"
-    if demand == "HIGH":
-        action = "Scale Ads 🚀"
-    elif demand == "LOW":
-        action = "Discount ⚠"
 
     cols[i].markdown(f"""
     <div class="card glow">
-    <h4>{city}</h4>
-    💰 ₹{rev:,.0f}<br>
-    📦 Orders: {count}<br>
-    ⚡ Demand: {demand}<br>
-    🎯 Action: {action}
+    <b>{city}</b><br>
+    ₹{rev:,.0f}<br>
+    Orders: {count}
     </div>
     """, unsafe_allow_html=True)
 
 # ===============================
-# MOMENTUM CHART
+# BOTTOM GRID
 # ===============================
-st.subheader("📊 Revenue Momentum")
+b1, b2 = st.columns(2)
 
-if not df.empty:
-    df["min"] = df["time"].dt.strftime("%H:%M")
-    chart = df.groupby("min")["price"].sum()
+# -------- HOT PRODUCTS
+with b1:
+    st.markdown("### 🔥 Hot Products")
 
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(
-        x=chart.index,
-        y=chart.values,
-        fill='tozeroy',
-        line=dict(width=3)
-    ))
+    if not df.empty:
+        top = df.groupby("product")["price"].sum().sort_values(ascending=False)
+        st.bar_chart(top)
 
-    st.plotly_chart(fig, use_container_width=True)
+# -------- LIVE STREAM
+with b2:
+    st.markdown("### 📡 Live Feed")
 
-# ===============================
-# HOT PRODUCTS
-# ===============================
-st.subheader("🔥 Hot Products")
-
-if not df.empty:
-    top = df.groupby("product")["price"].sum().sort_values(ascending=False)
-    st.bar_chart(top)
-
-# ===============================
-# ALERT ENGINE
-# ===============================
-st.subheader("🚨 Alerts")
-
-alerts = []
-
-if trend > 5:
-    alerts.append(("green","🚀 Surge detected"))
-elif trend < -5:
-    alerts.append(("red","⚠ Drop detected"))
-
-if velocity < 2:
-    alerts.append(("yellow","Low activity"))
-
-for color,msg in alerts:
-    st.markdown(f'<div class="alert {color}">{msg}</div>', unsafe_allow_html=True)
-
-# ===============================
-# DECISION ENGINE
-# ===============================
-st.subheader("🤖 Decision Engine")
-
-decision = "Stable operations"
-
-if trend > 5:
-    decision = "🚀 Increase ads + stock"
-elif trend < -5:
-    decision = "⚠ Run discounts immediately"
-
-st.success(decision)
-
-# ===============================
-# LIVE ACTIVITY STREAM
-# ===============================
-st.subheader("📡 Live Activity Stream")
-
-if not df.empty:
-    for _, s in df.tail(8).iloc[::-1].iterrows():
-
-        tag = ""
-        if s["price"] > 30000:
-            tag = "🔥 HIGH VALUE"
-        elif s["qty"] > 3:
-            tag = "📦 BULK"
-
-        st.markdown(f"""
-        ⚡ {s['product']} | ₹{s['price']:,.0f} | {s['city']}  
-        <small>{s['time'].strftime("%H:%M:%S")} {tag}</small>
-        """)
-
-# ===============================
-# LOADING (FIRST RUN SAFE)
-# ===============================
-if df.empty:
-    st.warning("⚡ Initializing live system...")
+    for _, s in df.tail(6).iloc[::-1].iterrows():
+        st.markdown(f"⚡ {s['product']} | ₹{s['price']} | {s['city']}")
 
 # ===============================
 # AUTO REFRESH
 # ===============================
-time.sleep(2)
+time.sleep(5)
 st.rerun()
