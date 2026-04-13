@@ -7,9 +7,19 @@ from datetime import datetime, timedelta
 # ===============================
 # CONFIG
 # ===============================
-st.set_page_config(layout="wide", page_title="⚡ War Room")
+st.set_page_config(layout="wide", page_title="⚡ War Room Pro")
 
-PRODUCTS = ["Laptop","Shoes","Watch","Phone","Bag","Tablet","Chair"]
+# REALISTIC PRODUCTS
+PRODUCTS = [
+    ("Laptop", 40000, 90000),
+    ("Phone", 10000, 60000),
+    ("Shoes", 2000, 8000),
+    ("Watch", 3000, 25000),
+    ("Chair", 6000, 20000),
+    ("Bag", 1500, 6000),
+    ("Tablet", 15000, 50000),
+]
+
 CITIES = ["Hyderabad","Mumbai","Delhi","Bangalore","Chennai"]
 
 # ===============================
@@ -21,23 +31,26 @@ if "last" not in st.session_state:
     st.session_state.last = time.time()
 
 # ===============================
-# GENERATE SALE (30 SEC)
+# GENERATE REALISTIC SALE
 # ===============================
 def generate_sale():
+    product, lo, hi = random.choice(PRODUCTS)
+    price = random.randint(lo, hi)
     return {
         "time": datetime.now(),
-        "product": random.choice(PRODUCTS),
+        "product": product,
         "city": random.choice(CITIES),
-        "price": random.randint(2000,50000),
-        "qty": random.randint(1,5)
+        "price": price,
+        "qty": random.randint(1,3)
     }
 
+# ADD EVERY 30s
 if time.time() - st.session_state.last > 30:
     st.session_state.sales.append(generate_sale())
     st.session_state.last = time.time()
 
 # ===============================
-# DATAFRAME FIX
+# DATAFRAME SAFE
 # ===============================
 df = pd.DataFrame(st.session_state.sales)
 
@@ -57,49 +70,67 @@ last_5m = df[df["time"] > datetime.now() - timedelta(minutes=5)]
 velocity = len(last_5m)
 
 # ===============================
-# UI STYLE
+# UI STYLE (UPGRADED)
 # ===============================
 st.markdown("""
 <style>
 body {background:#020617;color:white}
-.card {
+
+.kpi {
     background:#0f172a;
-    border:1px solid #1e293b;
     padding:15px;
     border-radius:12px;
+    border:1px solid #1e293b;
+    box-shadow:0 0 10px #22d3ee22;
+    animation: glow 2s infinite alternate;
 }
-.title {
-    font-size:28px;
-    font-weight:bold;
+@keyframes glow {
+    from {box-shadow:0 0 5px #22d3ee22;}
+    to {box-shadow:0 0 15px #22d3ee66;}
 }
-.glow {box-shadow:0 0 15px #22d3ee22}
+
+.card {
+    background:#0f172a;
+    border-radius:12px;
+    padding:15px;
+    border:1px solid #1e293b;
+}
+
+.tag {
+    background:#22d3ee;
+    color:black;
+    padding:3px 8px;
+    border-radius:6px;
+    font-size:10px;
+}
 </style>
 """, unsafe_allow_html=True)
 
 # ===============================
-# HERO
+# HEADER
 # ===============================
-st.markdown('<div class="title">⚡ REVENUE WAR ROOM</div>', unsafe_allow_html=True)
+st.title("⚡ REVENUE WAR ROOM PRO")
 
 # ===============================
 # KPI ROW
 # ===============================
 c1,c2,c3,c4 = st.columns(4)
-c1.metric("💰 Revenue", f"₹{total_rev:,.0f}")
-c2.metric("📦 Orders", orders)
-c3.metric("⚡ 5m Velocity", velocity)
+
+c1.markdown(f'<div class="kpi">💰 Revenue<br><b>₹{total_rev:,.0f}</b></div>', unsafe_allow_html=True)
+c2.markdown(f'<div class="kpi">📦 Orders<br><b>{orders}</b></div>', unsafe_allow_html=True)
+c3.markdown(f'<div class="kpi">⚡ Velocity<br><b>{velocity}</b></div>', unsafe_allow_html=True)
 
 top_city = df.groupby("city")["price"].sum().idxmax() if not df.empty else "-"
-c4.metric("🏆 Top City", top_city)
+c4.markdown(f'<div class="kpi">🏆 Top City<br><b>{top_city}</b></div>', unsafe_allow_html=True)
 
 # ===============================
 # MAIN GRID
 # ===============================
 left, right = st.columns([2,1])
 
-# ---------------- LEFT (CHART)
+# -------- CHART
 with left:
-    st.markdown("### 📊 Revenue Timeline")
+    st.subheader("📊 Revenue Timeline")
 
     if not df.empty:
         df["min"] = df["time"].dt.strftime("%H:%M")
@@ -114,31 +145,31 @@ with left:
         ))
         st.plotly_chart(fig, use_container_width=True)
 
-# ---------------- RIGHT (PULSE + DECISION)
+# -------- SIDE PANEL
 with right:
-    st.markdown("### 🎯 Demand Pulse")
+    st.subheader("🎯 Demand Status")
 
     intensity = min(velocity * 10, 100)
     st.progress(intensity)
 
     if intensity > 70:
-        st.success("🔥 HIGH")
+        st.success("🔥 HIGH DEMAND")
     elif intensity > 30:
         st.warning("⚡ MEDIUM")
     else:
         st.error("❄ LOW")
 
-    st.markdown("### 🤖 Decision")
+    st.subheader("🤖 Action")
 
     if intensity > 70:
         st.success("Scale Ads + Inventory")
-    elif intensity < 20:
-        st.warning("Run Discounts")
+    else:
+        st.warning("Run Promotions")
 
 # ===============================
 # CITY GRID
 # ===============================
-st.markdown("### 🌍 City War Grid")
+st.subheader("🌍 City Command")
 
 cols = st.columns(len(CITIES))
 
@@ -146,35 +177,30 @@ for i, city in enumerate(CITIES):
     city_df = df[df["city"] == city]
 
     rev = city_df["price"].sum()
-    count = len(city_df)
 
     cols[i].markdown(f"""
-    <div class="card glow">
+    <div class="card">
     <b>{city}</b><br>
-    ₹{rev:,.0f}<br>
-    Orders: {count}
+    ₹{rev:,.0f}
     </div>
     """, unsafe_allow_html=True)
 
 # ===============================
-# BOTTOM GRID
+# TRANSACTION CARDS (REPLACED FEED)
 # ===============================
-b1, b2 = st.columns(2)
+st.subheader("💳 Recent Transactions")
 
-# -------- HOT PRODUCTS
-with b1:
-    st.markdown("### 🔥 Hot Products")
+for _, s in df.tail(5).iloc[::-1].iterrows():
+    tag = ""
 
-    if not df.empty:
-        top = df.groupby("product")["price"].sum().sort_values(ascending=False)
-        st.bar_chart(top)
+    if s["price"] > 40000:
+        tag = '<span class="tag">HIGH VALUE</span>'
 
-# -------- LIVE STREAM
-with b2:
-    st.markdown("### 📡 Live Feed")
-
-    for _, s in df.tail(6).iloc[::-1].iterrows():
-        st.markdown(f"⚡ {s['product']} | ₹{s['price']} | {s['city']}")
+    st.markdown(f"""
+    <div class="card">
+    ⚡ {s['product']} — ₹{s['price']:,.0f} ({s['city']}) {tag}
+    </div>
+    """, unsafe_allow_html=True)
 
 # ===============================
 # AUTO REFRESH
