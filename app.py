@@ -17,11 +17,12 @@ CITIES = ["Hyderabad","Mumbai","Delhi","Bangalore","Chennai"]
 # ===============================
 if "sales" not in st.session_state:
     st.session_state.sales = []
+
 if "last" not in st.session_state:
     st.session_state.last = time.time()
 
 # ===============================
-# SALES ENGINE
+# SALES GENERATOR
 # ===============================
 def generate_sale():
     return {
@@ -32,24 +33,41 @@ def generate_sale():
         "qty": random.randint(1,5)
     }
 
+# add new sale every 2 sec
 if time.time() - st.session_state.last > 2:
     st.session_state.sales.append(generate_sale())
     st.session_state.last = time.time()
 
+# ===============================
+# DATAFRAME (FIXED)
+# ===============================
 df = pd.DataFrame(st.session_state.sales)
 
+# FIX: ensure structure always exists
+if df.empty:
+    df = pd.DataFrame(columns=["time","product","city","price","qty"])
+
+# ensure datetime
+if not df.empty:
+    df["time"] = pd.to_datetime(df["time"])
+
 # ===============================
-# METRICS
+# METRICS SAFE CALC
 # ===============================
 total_rev = df["price"].sum() if not df.empty else 0
 orders = len(df)
 
-last_30s = df[df["time"] > datetime.now() - timedelta(seconds=30)]
+if not df.empty:
+    last_30s = df[df["time"] > datetime.now() - timedelta(seconds=30)]
+    prev_30s = df[
+        (df["time"] > datetime.now() - timedelta(seconds=60)) &
+        (df["time"] <= datetime.now() - timedelta(seconds=30))
+    ]
+else:
+    last_30s = pd.DataFrame()
+    prev_30s = pd.DataFrame()
+
 velocity = len(last_30s)
-
-prev_30s = df[(df["time"] > datetime.now()-timedelta(seconds=60)) &
-              (df["time"] <= datetime.now()-timedelta(seconds=30))]
-
 trend = velocity - len(prev_30s)
 
 # ===============================
@@ -75,13 +93,14 @@ body {background:#020617;color:white}
 # ===============================
 # HEADER
 # ===============================
-st.title("⚡ REVENUE WAR ROOM v3")
+st.title("⚡ REVENUE WAR ROOM")
 
 # ===============================
 # KPI ROW
 # ===============================
 c1,c2,c3,c4 = st.columns(4)
-c1.metric("💰 Revenue", f"₹{total_rev}")
+
+c1.metric("💰 Revenue", f"₹{total_rev:,.0f}")
 c2.metric("📦 Orders", orders)
 c3.metric("⚡ Velocity (30s)", velocity)
 c4.metric("📈 Trend", trend)
@@ -92,7 +111,6 @@ c4.metric("📈 Trend", trend)
 st.subheader("🎯 Sales Intensity")
 
 intensity = min(velocity * 2, 100)
-
 st.progress(intensity)
 
 if intensity > 70:
@@ -103,20 +121,23 @@ else:
     st.error("❄ LOW DEMAND")
 
 # ===============================
-# CITY COMMAND GRID
+# CITY COMMAND CENTER
 # ===============================
 st.subheader("🌍 City Command Center")
 
 cols = st.columns(len(CITIES))
 
 for i, city in enumerate(CITIES):
-    city_df = df[df["city"] == city]
-    rev = city_df["price"].sum()
+    city_df = df[df["city"] == city] if not df.empty else pd.DataFrame()
+
+    rev = city_df["price"].sum() if not city_df.empty else 0
     count = len(city_df)
 
     demand = "LOW"
-    if count > 10: demand = "HIGH"
-    elif count > 5: demand = "MEDIUM"
+    if count > 10:
+        demand = "HIGH"
+    elif count > 5:
+        demand = "MEDIUM"
 
     action = "Maintain"
     if demand == "HIGH":
@@ -127,7 +148,7 @@ for i, city in enumerate(CITIES):
     cols[i].markdown(f"""
     <div class="card glow">
     <h4>{city}</h4>
-    💰 ₹{rev}<br>
+    💰 ₹{rev:,.0f}<br>
     📦 Orders: {count}<br>
     ⚡ Demand: {demand}<br>
     🎯 Action: {action}
@@ -170,48 +191,54 @@ st.subheader("🚨 Alerts")
 alerts = []
 
 if trend > 5:
-    alerts.append(("green","SURGE detected"))
+    alerts.append(("green","🚀 Surge detected"))
 elif trend < -5:
-    alerts.append(("red","DROP detected"))
+    alerts.append(("red","⚠ Drop detected"))
 
 if velocity < 2:
-    alerts.append(("yellow","LOW activity"))
+    alerts.append(("yellow","Low activity"))
 
 for color,msg in alerts:
     st.markdown(f'<div class="alert {color}">{msg}</div>', unsafe_allow_html=True)
 
 # ===============================
-# AI COMMAND CENTER
+# DECISION ENGINE
 # ===============================
 st.subheader("🤖 Decision Engine")
 
 decision = "Stable operations"
 
 if trend > 5:
-    decision = "🚀 Increase inventory & ads"
+    decision = "🚀 Increase ads + stock"
 elif trend < -5:
-    decision = "⚠ Launch discounts immediately"
+    decision = "⚠ Run discounts immediately"
 
 st.success(decision)
 
 # ===============================
-# LIVE ACTIVITY STREAM (REPLACES TABLE)
+# LIVE ACTIVITY STREAM
 # ===============================
 st.subheader("📡 Live Activity Stream")
 
-for sale in df.tail(8).iloc[::-1].iterrows():
-    s = sale[1]
+if not df.empty:
+    for _, s in df.tail(8).iloc[::-1].iterrows():
 
-    tag = ""
-    if s["price"] > 30000:
-        tag = "🔥 HIGH VALUE"
-    elif s["qty"] > 3:
-        tag = "📦 BULK"
+        tag = ""
+        if s["price"] > 30000:
+            tag = "🔥 HIGH VALUE"
+        elif s["qty"] > 3:
+            tag = "📦 BULK"
 
-    st.markdown(f"""
-    ⚡ {s['product']} | ₹{s['price']} | {s['city']}  
-    <small>{s['time'].strftime("%H:%M:%S")} {tag}</small>
-    """)
+        st.markdown(f"""
+        ⚡ {s['product']} | ₹{s['price']:,.0f} | {s['city']}  
+        <small>{s['time'].strftime("%H:%M:%S")} {tag}</small>
+        """)
+
+# ===============================
+# LOADING (FIRST RUN SAFE)
+# ===============================
+if df.empty:
+    st.warning("⚡ Initializing live system...")
 
 # ===============================
 # AUTO REFRESH
