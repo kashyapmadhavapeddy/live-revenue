@@ -320,68 +320,39 @@ ch1,ch2 = st.columns([2.2,1])
 with ch1:
     dft = df.copy()
     dft["b"] = dft["timestamp"].dt.floor("5min")
-    rt = dft.groupby("b").agg(rev=("revenue","sum"), ord=("order_id","count")).reset_index().sort_values("b")
+    rt = dft.groupby("b").agg(
+        rev=("revenue","sum"),
+        ord=("order_id","count")
+    ).reset_index().sort_values("b")
 
     fig = go.Figure()
 
-    # ghost fill (slightly more visible)
+    # ✅ MAIN LINE (THICK + BRIGHT)
     fig.add_trace(go.Scatter(
-        x=rt["b"], y=rt["rev"],
-        fill="tozeroy", fillcolor="rgba(0,255,136,.25)",
-        line=dict(color="rgba(0,0,0,0)", width=0),
+        x=rt["b"],
+        y=rt["rev"],
+        mode="lines+markers",
+        line=dict(color="#00ff88", width=4),   # 🔥 thicker
+        marker=dict(size=8, color="#00ff88"),  # 🔥 bigger
+        name="Revenue"
+    ))
+
+    # ✅ ADD GLOW EFFECT (duplicate line)
+    fig.add_trace(go.Scatter(
+        x=rt["b"],
+        y=rt["rev"],
+        mode="lines",
+        line=dict(color="rgba(0,255,136,0.2)", width=10),
         showlegend=False,
         hoverinfo="skip"
     ))
 
-    # main revenue line
-    fig.add_trace(go.Scatter(
-        x=rt["b"], y=rt["rev"],
-        name="Revenue",
-        line=dict(color="#00ff88", width=2.5),
-        mode="lines+markers",
-        marker=dict(size=5, color="#00ff88"),
-        hovertemplate="<b>%{x|%H:%M}</b><br>₹%{y:,.0f}<extra></extra>"
-    ))
-
-    # moving average
-    if len(rt) > 3:
-        rt["ma"] = rt["rev"].rolling(3, min_periods=1).mean()
-        fig.add_trace(go.Scatter(
-            x=rt["b"], y=rt["ma"],
-            name="Trend (MA3)",
-            line=dict(color="#ffaa00", width=1.5, dash="dot"),
-            hovertemplate="Trend ₹%{y:,.0f}<extra></extra>"
-        ))
-
-    # orders bar
-    fig.add_trace(go.Bar(
-        x=rt["b"], y=rt["ord"],
-        name="Orders",
-        marker=dict(color="rgba(0,200,255,.2)", line=dict(width=0)),
-        yaxis="y2",
-        hovertemplate="Orders: %{y}<extra></extra>"
-    ))
-
-    lo = clo("REVENUE + ORDER VOLUME  (5-MIN BUCKETS)", 300)
-
-    # ❌ REMOVED BROKEN LINE:
-    # lo["xaxis"]["range"] = [rt["b"].min(), rt["b"].max()]
-
-    lo["xaxis"]["tickformat"] = "%H:%M"
-    lo["yaxis"]["rangemode"] = "tozero"
-
-    lo["yaxis2"] = dict(
-        overlaying="y",
-        side="right",
-        showgrid=False,
-        zeroline=False,
-        tickfont=dict(size=8, color="rgba(0,200,255,.4)"),
-        rangemode="tozero"
+    fig.update_layout(
+        template="plotly_dark",
+        height=300,
+        xaxis=dict(showgrid=False),
+        yaxis=dict(showgrid=True)
     )
-
-    lo["bargap"] = 0.1
-
-    fig.update_layout(**lo)
 
     st.plotly_chart(fig, use_container_width=True)
 
