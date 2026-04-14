@@ -169,49 +169,20 @@ def fi(v):
     if v>=1000:        return f"₹{v/1000:.1f}K"
     return f"₹{v:,.0f}"
 
-def clo(title="", height=300):
+def clo(title="",height=300):
     return dict(
-        title=dict(
-            text=title,
-            font=dict(size=10, color="#00ff88", family="Share Tech Mono"),
-            x=0.01
-        ),
-
-        # ✅ FORCE proper backgrounds (critical fix)
-        plot_bgcolor="#020408",
-        paper_bgcolor="#020408",
-
-        font=dict(color="#c8d8e8", family="Exo 2", size=10),
-
-        xaxis=dict(
-            showgrid=True,
-            gridcolor="rgba(0,255,136,.08)",
-            zeroline=False,
-            tickfont=dict(size=9, color="#00ff88"),
-            showline=True,
-            linecolor="rgba(0,255,136,.3)"
-        ),
-
-        yaxis=dict(
-            showgrid=True,
-            gridcolor="rgba(0,255,136,.08)",
-            zeroline=False,
-            tickfont=dict(size=9, color="#00ff88")
-        ),
-
-        margin=dict(l=8, r=8, t=30, b=8),
-
-        legend=dict(
-            bgcolor="rgba(0,0,0,0)",
-            font=dict(size=9, color="#00ff88"),
-            orientation="h",
-            y=1.1,
-            x=0
-        ),
-
-        height=height,
-        hovermode="x unified"
-    )
+        title=dict(text=title,font=dict(size=10,color="rgba(0,255,136,.65)",family="Share Tech Mono"),x=0.01),
+        plot_bgcolor="rgba(0,0,0,0)",paper_bgcolor="rgba(0,0,0,0)",
+        font=dict(color="rgba(140,180,140,.65)",family="Exo 2",size=10),
+        xaxis=dict(showgrid=True,gridcolor="rgba(0,255,136,.05)",zeroline=False,
+                   tickfont=dict(size=9,color="rgba(0,200,100,.45)"),
+                   showline=True,linecolor="rgba(0,255,136,.12)"),
+        yaxis=dict(showgrid=True,gridcolor="rgba(0,255,136,.05)",zeroline=False,
+                   tickfont=dict(size=9,color="rgba(0,200,100,.45)")),
+        margin=dict(l=8,r=8,t=30,b=8),
+        legend=dict(bgcolor="rgba(0,0,0,0)",font=dict(size=9,color="rgba(140,200,140,.65)"),
+                    orientation="h",y=1.1,x=0),
+        height=height,hovermode="x unified")
 
 now_dt   = datetime.now()
 tot_rev  = df["revenue"].sum()
@@ -320,40 +291,42 @@ ch1,ch2 = st.columns([2.2,1])
 with ch1:
     dft = df.copy()
     dft["b"] = dft["timestamp"].dt.floor("5min")
-    rt = dft.groupby("b").agg(
-        rev=("revenue","sum"),
-        ord=("order_id","count")
-    ).reset_index().sort_values("b")
+    rt = dft.groupby("b").agg(rev=("revenue","sum"), ord=("order_id","count")).reset_index().sort_values("b")
 
     fig = go.Figure()
-
-    # ✅ MAIN LINE (THICK + BRIGHT)
+    # ghost fill
     fig.add_trace(go.Scatter(
-        x=rt["b"],
-        y=rt["rev"],
+        x=rt["b"], y=rt["rev"],
+        fill="tozeroy", fillcolor="rgba(0,255,136,.06)",
+        line=dict(color="rgba(0,0,0,0)",width=0),
+        showlegend=False, hoverinfo="skip"))
+    # main line
+    fig.add_trace(go.Scatter(
+        x=rt["b"], y=rt["rev"], name="Revenue",
+        line=dict(color="#00ff88",width=2.5),
         mode="lines+markers",
-        line=dict(color="#00ff88", width=4),   # 🔥 thicker
-        marker=dict(size=8, color="#00ff88"),  # 🔥 bigger
-        name="Revenue"
-    ))
-
-    # ✅ ADD GLOW EFFECT (duplicate line)
-    fig.add_trace(go.Scatter(
-        x=rt["b"],
-        y=rt["rev"],
-        mode="lines",
-        line=dict(color="rgba(0,255,136,0.2)", width=10),
-        showlegend=False,
-        hoverinfo="skip"
-    ))
-
-    fig.update_layout(
-        template="plotly_dark",
-        height=300,
-        xaxis=dict(showgrid=False),
-        yaxis=dict(showgrid=True)
-    )
-
+        marker=dict(size=4,color="#00ff88"),
+        hovertemplate="<b>%{x|%H:%M}</b><br>₹%{y:,.0f}<extra></extra>"))
+    if len(rt)>3:
+        rt["ma"] = rt["rev"].rolling(3,min_periods=1).mean()
+        fig.add_trace(go.Scatter(
+            x=rt["b"], y=rt["ma"], name="Trend (MA3)",
+            line=dict(color="#ffaa00",width=1.5,dash="dot"),
+            hovertemplate="Trend ₹%{y:,.0f}<extra></extra>"))
+    fig.add_trace(go.Bar(
+        x=rt["b"], y=rt["ord"], name="Orders",
+        marker=dict(color="rgba(0,200,255,.15)",line=dict(width=0)),
+        yaxis="y2",
+        hovertemplate="Orders: %{y}<extra></extra>"))
+    lo = clo("REVENUE + ORDER VOLUME  (5-MIN BUCKETS)",300)
+    # FIX: use actual data min/max for x-axis range — this was causing blank chart
+    lo["xaxis"]["range"] = [rt["b"].min(), rt["b"].max()]
+    lo["xaxis"]["tickformat"] = "%H:%M"
+    lo["yaxis"]["rangemode"] = "tozero"
+    lo["yaxis2"] = dict(overlaying="y",side="right",showgrid=False,zeroline=False,
+                        tickfont=dict(size=8,color="rgba(0,200,255,.4)"),rangemode="tozero")
+    lo["bargap"] = 0.1
+    fig.update_layout(**lo)
     st.plotly_chart(fig, use_container_width=True)
 
 with ch2:
