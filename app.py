@@ -169,20 +169,49 @@ def fi(v):
     if v>=1000:        return f"₹{v/1000:.1f}K"
     return f"₹{v:,.0f}"
 
-def clo(title="",height=300):
+def clo(title="", height=300):
     return dict(
-        title=dict(text=title,font=dict(size=10,color="rgba(0,255,136,.65)",family="Share Tech Mono"),x=0.01),
-        plot_bgcolor="rgba(0,0,0,0)",paper_bgcolor="rgba(0,0,0,0)",
-        font=dict(color="rgba(140,180,140,.65)",family="Exo 2",size=10),
-        xaxis=dict(showgrid=True,gridcolor="rgba(0,255,136,.05)",zeroline=False,
-                   tickfont=dict(size=9,color="rgba(0,200,100,.45)"),
-                   showline=True,linecolor="rgba(0,255,136,.12)"),
-        yaxis=dict(showgrid=True,gridcolor="rgba(0,255,136,.05)",zeroline=False,
-                   tickfont=dict(size=9,color="rgba(0,200,100,.45)")),
-        margin=dict(l=8,r=8,t=30,b=8),
-        legend=dict(bgcolor="rgba(0,0,0,0)",font=dict(size=9,color="rgba(140,200,140,.65)"),
-                    orientation="h",y=1.1,x=0),
-        height=height,hovermode="x unified")
+        title=dict(
+            text=title,
+            font=dict(size=10, color="#00ff88", family="Share Tech Mono"),
+            x=0.01
+        ),
+
+        # ✅ FORCE proper backgrounds (critical fix)
+        plot_bgcolor="#020408",
+        paper_bgcolor="#020408",
+
+        font=dict(color="#c8d8e8", family="Exo 2", size=10),
+
+        xaxis=dict(
+            showgrid=True,
+            gridcolor="rgba(0,255,136,.08)",
+            zeroline=False,
+            tickfont=dict(size=9, color="#00ff88"),
+            showline=True,
+            linecolor="rgba(0,255,136,.3)"
+        ),
+
+        yaxis=dict(
+            showgrid=True,
+            gridcolor="rgba(0,255,136,.08)",
+            zeroline=False,
+            tickfont=dict(size=9, color="#00ff88")
+        ),
+
+        margin=dict(l=8, r=8, t=30, b=8),
+
+        legend=dict(
+            bgcolor="rgba(0,0,0,0)",
+            font=dict(size=9, color="#00ff88"),
+            orientation="h",
+            y=1.1,
+            x=0
+        ),
+
+        height=height,
+        hovermode="x unified"
+    )
 
 now_dt   = datetime.now()
 tot_rev  = df["revenue"].sum()
@@ -298,7 +327,7 @@ with ch1:
     # ghost fill (slightly more visible)
     fig.add_trace(go.Scatter(
         x=rt["b"], y=rt["rev"],
-        fill="tozeroy", fillcolor="rgba(0,255,136,.15)",
+        fill="tozeroy", fillcolor="rgba(0,255,136,.25)",
         line=dict(color="rgba(0,0,0,0)", width=0),
         showlegend=False,
         hoverinfo="skip"
