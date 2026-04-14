@@ -152,13 +152,16 @@ def gen_sale(ts=None):
             "price":price,"quantity":qty,"city":city,"region":reg,"lat":lat,"lon":lon,
             "weather_condition":weather,"weather_emoji":emoji,"weather_mult":mult,"revenue":rev}
 
-# Seed 80 historical sales
+# Seed 120 historical sales spread evenly across last 6 hours
 if not st.session_state.sales:
     now = datetime.now()
-    for i in range(80):
-        s=gen_sale(now-timedelta(minutes=random.randint(1,180)))
+    # Create evenly spaced timestamps + small jitter so every 10-min bucket has data
+    for i in range(120):
+        minutes_ago = (120 - i) * 3 + random.randint(-1, 1)  # every ~3 min, slight jitter
+        minutes_ago = max(1, minutes_ago)
+        s = gen_sale(now - timedelta(minutes=minutes_ago))
         st.session_state.sales.append(s)
-    st.session_state.sales.sort(key=lambda x:x["timestamp"])
+    st.session_state.sales.sort(key=lambda x: x["timestamp"])
 
 # New sale every 30s
 now_ts = time.time()
@@ -324,19 +327,57 @@ st.markdown('<div class="sec">📊 REVENUE ANALYTICS</div>', unsafe_allow_html=T
 c1,c2 = st.columns([2.2,1])
 
 with c1:
-    dft = df.copy(); dft["b"]=dft["timestamp"].dt.floor("10min")
-    rt  = dft.groupby("b").agg(rev=("revenue","sum"),ord=("order_id","count")).reset_index().sort_values("b")
+    dft = df.copy()
+    dft["b"] = dft["timestamp"].dt.floor("5min")
+    rt = dft.groupby("b").agg(rev=("revenue","sum"), ord=("order_id","count")).reset_index().sort_values("b")
+
+    # Always enforce a proper x-axis window: last 3 hours → now
+    x_end   = datetime.now()
+    x_start = x_end - timedelta(hours=3)
+
     fig = go.Figure()
-    fig.add_trace(go.Scatter(x=rt["b"],y=rt["rev"],fill="tozeroy",fillcolor="rgba(0,255,136,.05)",line=dict(color="#00ff88",width=0),showlegend=False,hoverinfo="skip"))
-    fig.add_trace(go.Scatter(x=rt["b"],y=rt["rev"],name="Revenue",line=dict(color="#00ff88",width=2),hovertemplate="<b>%{x|%H:%M}</b><br>₹%{y:,.0f}<extra></extra>"))
-    if len(rt)>4:
-        rt["ma"]=rt["rev"].rolling(3,min_periods=1).mean()
-        fig.add_trace(go.Scatter(x=rt["b"],y=rt["ma"],name="Trend",line=dict(color="#ffaa00",width=1.5,dash="dot"),hovertemplate="Trend ₹%{y:,.0f}<extra></extra>"))
-    fig.add_trace(go.Bar(x=rt["b"],y=rt["ord"],name="Orders",marker=dict(color="rgba(0,200,255,.13)",line=dict(width=0)),yaxis="y2",hovertemplate="Orders: %{y}<extra></extra>"))
-    lo=clo("REVENUE + ORDER VOLUME (10-MIN BUCKETS)",300)
-    lo["yaxis2"]=dict(overlaying="y",side="right",showgrid=False,zeroline=False,tickfont=dict(size=8,color="rgba(0,200,255,.4)"))
-    lo["bargap"]=0.1
-    fig.update_layout(**lo); st.plotly_chart(fig,use_container_width=True)
+    # Ghost fill area
+    fig.add_trace(go.Scatter(
+        x=rt["b"], y=rt["rev"],
+        fill="tozeroy", fillcolor="rgba(0,255,136,.06)",
+        line=dict(color="rgba(0,0,0,0)", width=0),
+        showlegend=False, hoverinfo="skip",
+    ))
+    # Main revenue line
+    fig.add_trace(go.Scatter(
+        x=rt["b"], y=rt["rev"], name="Revenue",
+        line=dict(color="#00ff88", width=2.5),
+        mode="lines+markers",
+        marker=dict(size=4, color="#00ff88", symbol="circle"),
+        hovertemplate="<b>%{x|%H:%M}</b><br>₹%{y:,.0f}<extra></extra>",
+    ))
+    # Moving average trend line
+    if len(rt) > 3:
+        rt["ma"] = rt["rev"].rolling(3, min_periods=1).mean()
+        fig.add_trace(go.Scatter(
+            x=rt["b"], y=rt["ma"], name="Trend (MA3)",
+            line=dict(color="#ffaa00", width=1.5, dash="dot"),
+            hovertemplate="Trend ₹%{y:,.0f}<extra></extra>",
+        ))
+    # Order count bars on secondary axis
+    fig.add_trace(go.Bar(
+        x=rt["b"], y=rt["ord"], name="Orders",
+        marker=dict(color="rgba(0,200,255,.15)", line=dict(width=0)),
+        yaxis="y2",
+        hovertemplate="Orders: %{y}<extra></extra>",
+    ))
+    lo = clo("REVENUE + ORDER VOLUME  (5-MIN BUCKETS)", 300)
+    lo["xaxis"]["range"]   = [x_start, x_end]
+    lo["xaxis"]["tickformat"] = "%H:%M"
+    lo["yaxis"]["rangemode"] = "tozero"
+    lo["yaxis2"] = dict(
+        overlaying="y", side="right", showgrid=False, zeroline=False,
+        tickfont=dict(size=8, color="rgba(0,200,255,.4)"),
+        rangemode="tozero",
+    )
+    lo["bargap"] = 0.1
+    fig.update_layout(**lo)
+    st.plotly_chart(fig, use_container_width=True)
 
 with c2:
     cr  = df.groupby("category")["revenue"].sum().reset_index()
