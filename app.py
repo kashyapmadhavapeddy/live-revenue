@@ -555,5 +555,4 @@ for col,(tag,val,desc) in zip([m1,m2,m3,m4],[
 st.markdown(f'<div class="ftr">REVENUE PULSE WAR ROOM · {st.session_state.tg} ORDERS GENERATED · AUTO-REFRESH 30s · {now_dt.strftime("%d %b %Y %H:%M:%S")}</div>', unsafe_allow_html=True)
 
 # ── AUTO REFRESH ──────────────────────────────────────────────────
-time.sleep(30)
-st.rerun()
+st.markdown('<meta http-equiv="refresh" content="30">', unsafe_allow_html=True)
