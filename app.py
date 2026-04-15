@@ -1,5 +1,5 @@
 
-import plotly.express as px @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@400;600;700&family=Share+Tech+Mono
+import plotly.express as px
 
 
 import streamlit as st
