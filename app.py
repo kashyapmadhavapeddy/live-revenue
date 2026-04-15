@@ -36,10 +36,10 @@ footer,[data-testid="stSidebar"]{display:none !important;}
 .kcard.p::before{background:linear-gradient(90deg,transparent,#aa88ff,transparent);}
 .ktag{font-family:'Share Tech Mono',monospace;font-size:.52rem;letter-spacing:2px;color:rgba(180,200,180,.4);margin-bottom:.45rem;text-transform:uppercase;}
 .knum{font-family:'Orbitron',monospace;font-size:1.7rem;font-weight:700;line-height:1;}
-.knum.g{color:#00ff88;} .knum.b{color:#00ccff;} .knum.a{color:#ffaa00;} .knum.r{color:#ff5050;} .knum.p{color:#aa88ff;}
+.knum.g{color:#00ff88;}.knum.b{color:#00ccff;}.knum.a{color:#ffaa00;}.knum.r{color:#ff5050;}.knum.p{color:#aa88ff;}
 .kfoot{font-family:'Share Tech Mono',monospace;font-size:.58rem;color:rgba(160,190,160,.4);margin-top:.35rem;}
 .kdelta{font-family:'Share Tech Mono',monospace;font-size:.62rem;margin-top:.18rem;}
-.kdelta.u{color:#00ff88;} .kdelta.d{color:#ff5050;}
+.kdelta.u{color:#00ff88;}.kdelta.d{color:#ff5050;}
 .kico{position:absolute;right:.9rem;bottom:.6rem;font-size:2rem;opacity:.07;}
 .ticker{background:rgba(0,8,4,.9);border:1px solid rgba(0,255,136,.13);border-radius:3px;padding:.4rem 0;overflow:hidden;margin-bottom:.5rem;position:relative;}
 .tlbl{position:absolute;left:0;top:0;bottom:0;background:rgba(0,255,136,.1);border-right:1px solid rgba(0,255,136,.18);display:flex;align-items:center;padding:0 .6rem;font-family:'Orbitron',monospace;font-size:.48rem;color:#00ff88;letter-spacing:2px;z-index:2;}
@@ -56,7 +56,7 @@ footer,[data-testid="stSidebar"]{display:none !important;}
 .cname{font-family:'Orbitron',monospace;font-size:.68rem;font-weight:700;color:#c8e8d8;letter-spacing:2px;margin-bottom:.25rem;}
 .cwea{font-family:'Share Tech Mono',monospace;font-size:.55rem;color:rgba(140,190,150,.55);margin-bottom:.25rem;}
 .cimpact{font-family:'Exo 2',sans-serif;font-size:.95rem;font-weight:700;margin-bottom:.18rem;}
-.cimpact.boost{color:#00ff88;} .cimpact.hurt{color:#ff5050;} .cimpact.neutral{color:#ffaa00;}
+.cimpact.boost{color:#00ff88;}.cimpact.hurt{color:#ff5050;}.cimpact.neutral{color:#ffaa00;}
 .crev{font-family:'Share Tech Mono',monospace;font-size:.57rem;color:rgba(140,190,140,.45);}
 .prow{display:flex;align-items:center;gap:.7rem;background:rgba(0,12,8,.7);border:1px solid rgba(0,255,136,.07);border-radius:3px;padding:.5rem .7rem;margin-bottom:.3rem;}
 .prnk{font-family:'Orbitron',monospace;font-size:.6rem;color:rgba(0,255,136,.35);width:16px;text-align:center;}
@@ -69,14 +69,14 @@ footer,[data-testid="stSidebar"]{display:none !important;}
 .otbl th{background:rgba(0,255,136,.05);border-bottom:1px solid rgba(0,255,136,.13);color:rgba(0,255,136,.55);padding:.45rem .65rem;text-align:left;letter-spacing:2px;font-size:.5rem;text-transform:uppercase;}
 .otbl td{padding:.42rem .65rem;border-bottom:1px solid rgba(0,255,136,.04);color:#88a888;}
 .otbl tr:hover td{background:rgba(0,255,136,.03);color:#a8c8a8;}
-.rc{color:#00ff88 !important;font-weight:700;} .wb{color:#00ff88 !important;} .wh{color:#ff5050 !important;} .wn{color:#ffaa00 !important;}
+.rc{color:#00ff88 !important;font-weight:700;}.wb{color:#00ff88 !important;}.wh{color:#ff5050 !important;}.wn{color:#ffaa00 !important;}
 .icrd{background:linear-gradient(135deg,rgba(0,15,10,.92),rgba(0,8,18,.92));border:1px solid rgba(0,200,136,.1);border-radius:4px;padding:.9rem 1rem;height:100%;}
 .itag{font-family:'Share Tech Mono',monospace;font-size:.52rem;letter-spacing:2.5px;color:rgba(140,190,140,.45);margin-bottom:.4rem;text-transform:uppercase;}
 .ival{font-family:'Orbitron',monospace;font-size:.95rem;font-weight:700;color:#00ff88;margin-bottom:.28rem;}
 .idesc{font-family:'Share Tech Mono',monospace;font-size:.58rem;color:rgba(140,170,140,.45);line-height:1.5;}
 .stButton button{background:linear-gradient(135deg,rgba(0,255,136,.12),rgba(0,200,255,.08)) !important;border:1px solid rgba(0,255,136,.28) !important;border-radius:3px !important;color:#00ff88 !important;font-family:'Share Tech Mono',monospace !important;font-size:.62rem !important;letter-spacing:2px !important;padding:.38rem .9rem !important;}
 hr{border-color:rgba(0,255,136,.1)!important;}
-::-webkit-scrollbar{width:4px;height:4px;} ::-webkit-scrollbar-track{background:#020408;} ::-webkit-scrollbar-thumb{background:rgba(0,255,136,.18);border-radius:2px;}
+::-webkit-scrollbar{width:4px;height:4px;}::-webkit-scrollbar-track{background:#020408;}::-webkit-scrollbar-thumb{background:rgba(0,255,136,.18);border-radius:2px;}
 .ftr{font-family:'Share Tech Mono',monospace;font-size:.5rem;color:rgba(0,255,136,.18);text-align:center;letter-spacing:3px;margin-top:2rem;padding:.7rem;border-top:1px solid rgba(0,255,136,.07);}
 </style>
 """, unsafe_allow_html=True)
@@ -139,7 +139,6 @@ def gen_sale(ts=None):
             "category":cat,"price":price,"quantity":qty,"city":city,
             "region":reg,"weather_condition":weather,"weather_emoji":emoji,"revenue":rev}
 
-# Seed: exactly 1 sale every 3 minutes for last 6 hours → 120 sales evenly spread
 if not st.session_state.sales:
     now = datetime.now()
     for i in range(120):
@@ -147,7 +146,6 @@ if not st.session_state.sales:
         st.session_state.sales.append(gen_sale(now - timedelta(minutes=mins)))
     st.session_state.lts = time.time()
 
-# New sale every 30 seconds
 now_ts = time.time()
 if (now_ts - st.session_state.lts) >= 30:
     st.session_state.sales.append(gen_sale())
@@ -157,16 +155,14 @@ df = pd.DataFrame(st.session_state.sales).sort_values("timestamp",ascending=Fals
 
 # ── WEATHER API ───────────────────────────────────────────────────────────────
 API_KEY = st.secrets.get("OPENWEATHER_API_KEY","")
-
 def get_wx(city,lat,lon):
     try:
-        r = requests.get("https://api.openweathermap.org/data/2.5/weather",
-                         params={"lat":lat,"lon":lon,"appid":API_KEY,"units":"metric"},timeout=5)
+        r=requests.get("https://api.openweathermap.org/data/2.5/weather",
+                       params={"lat":lat,"lon":lon,"appid":API_KEY,"units":"metric"},timeout=5)
         if r.status_code==200:
             d=r.json()
             return {"desc":d["weather"][0]["description"].title(),
-                    "temp":round(d["main"]["temp"],1),
-                    "humid":d["main"]["humidity"],
+                    "temp":round(d["main"]["temp"],1),"humid":d["main"]["humidity"],
                     "icon":d["weather"][0]["icon"]}
     except: pass
     return None
@@ -185,32 +181,10 @@ def fi(v):
     if v>=1000:        return f"₹{v/1000:.1f}K"
     return f"₹{v:,.0f}"
 
-# ── TWO SEPARATE LAYOUT FUNCTIONS — one for time charts, one for category charts
-def time_layout(title, h=310):
-    """Layout for charts with datetime x-axis."""
-    return dict(
-        title=dict(text=title, font=dict(size=11,color="#00cc66",family="Share Tech Mono"),x=0.01),
-        plot_bgcolor="#030d06",
-        paper_bgcolor="#020408",
-        font=dict(color="#6a9a6a",family="Exo 2",size=10),
-        xaxis=dict(showgrid=True,gridcolor="#0d2d14",zeroline=False,
-                   tickfont=dict(size=9,color="#4a8a5a"),
-                   showline=True,linecolor="#1a3d20",
-                   tickformat="%H:%M",type="date"),
-        yaxis=dict(showgrid=True,gridcolor="#0d2d14",zeroline=True,
-                   zerolinecolor="#1a3d20",tickfont=dict(size=9,color="#4a8a5a"),
-                   rangemode="tozero"),
-        margin=dict(l=10,r=10,t=38,b=10),
-        legend=dict(bgcolor="rgba(2,4,8,0.8)",bordercolor="#1a3d20",borderwidth=1,
-                    font=dict(size=9,color="#7ab87a"),orientation="h",y=1.08,x=0),
-        height=h,hovermode="x unified",
-        hoverlabel=dict(bgcolor="#051a09",bordercolor="#00ff88",font=dict(color="#c8e8c8",size=10)),
-    )
-
-def cat_layout(title, h=310):
-    """Layout for charts with categorical/numeric x-axis (NO tickformat)."""
-    return dict(
-        title=dict(text=title, font=dict(size=11,color="#00cc66",family="Share Tech Mono"),x=0.01),
+# ── SINGLE layout function — no tickformat by default, pass it in when needed ─
+def L(title="", h=300, tickfmt=None):
+    lo = dict(
+        title=dict(text=title,font=dict(size=11,color="#00cc66",family="Share Tech Mono"),x=0.01),
         plot_bgcolor="#030d06",
         paper_bgcolor="#020408",
         font=dict(color="#6a9a6a",family="Exo 2",size=10),
@@ -221,11 +195,15 @@ def cat_layout(title, h=310):
                    zerolinecolor="#1a3d20",tickfont=dict(size=9,color="#4a8a5a"),
                    rangemode="tozero"),
         margin=dict(l=10,r=10,t=38,b=10),
-        legend=dict(bgcolor="rgba(2,4,8,0.8)",bordercolor="#1a3d20",borderwidth=1,
+        legend=dict(bgcolor="rgba(2,4,8,.8)",bordercolor="#1a3d20",borderwidth=1,
                     font=dict(size=9,color="#7ab87a"),orientation="h",y=1.08,x=0),
-        height=h,hovermode="closest",
-        hoverlabel=dict(bgcolor="#051a09",bordercolor="#00ff88",font=dict(color="#c8e8c8",size=10)),
+        height=h,hovermode="x unified",
+        hoverlabel=dict(bgcolor="#051a09",bordercolor="#00ff88",
+                        font=dict(color="#c8e8c8",size=10)),
     )
+    if tickfmt:
+        lo["xaxis"]["tickformat"] = tickfmt
+    return lo
 
 # ── ANALYTICS ─────────────────────────────────────────────────────────────────
 now_dt   = datetime.now()
@@ -249,11 +227,12 @@ top_cat  = df.groupby("category")["revenue"].sum().idxmax()
 top_reg  = df.groupby("region")["revenue"].sum().idxmax()
 
 # ── COMMAND BAR ───────────────────────────────────────────────────────────────
-arrow = "▲" if trend>=0 else "▼"
-tc    = "spill" if trend>=0 else "spill w" if trend>-15 else "spill d"
+arrow="▲" if trend>=0 else "▼"
+tc="spill" if trend>=0 else "spill w" if trend>-15 else "spill d"
 st.markdown(f"""
 <div class="cmd-bar">
-  <div><div class="brand">⚡ Revenue Pulse</div><div class="brand-sub">Live Sales Intelligence · War Room</div></div>
+  <div><div class="brand">⚡ Revenue Pulse</div>
+  <div class="brand-sub">Live Sales Intelligence · War Room</div></div>
   <div style="display:flex;align-items:center;gap:1.2rem;">
     <div class="{tc}"><span class="blink"></span> LIVE · {tot_ord} ORDERS</div>
     <div class="spill">TREND {arrow} {abs(trend):.1f}%</div>
@@ -267,17 +246,15 @@ tick_items = "   ·   ".join([f"🟢 {r['order_id']} · {r['product']} · {r['ci
 tick_items += f"   ·   📊 TODAY {fi(today_rev)} · TOP {top_city} · BEST {top_prod}"
 st.markdown(f'<div class="ticker"><div class="tlbl">LIVE</div><div class="tscr">{tick_items}</div></div>', unsafe_allow_html=True)
 
-_,bc = st.columns([8,1])
+_,bc=st.columns([8,1])
 with bc:
     if st.button("⟳ REFRESH"): st.rerun()
 
 # ── KPI CARDS ─────────────────────────────────────────────────────────────────
 st.markdown('<div class="sec">COMMAND METRICS · REAL-TIME</div>', unsafe_allow_html=True)
-k1,k2,k3,k4,k5,k6 = st.columns(6)
-
+k1,k2,k3,k4,k5,k6=st.columns(6)
 def kcard(col,cls,tag,num,delta,foot,ico,dcls="u"):
     col.markdown(f'<div class="kcard {cls}"><div class="ktag">{tag}</div><div class="knum {cls}">{num}</div><div class="kdelta {dcls}">{delta}</div><div class="kfoot">{foot}</div><div class="kico">{ico}</div></div>',unsafe_allow_html=True)
-
 kcard(k1,"g","Total Revenue",fi(tot_rev),"▲ All time",f"{tot_ord} orders","💰")
 kcard(k2,"g" if trend>=0 else "r","Revenue Trend",f"{'▲' if trend>=0 else '▼'}{abs(trend):.1f}%",f"{fi(rev_1h)} this hr",f"prev: {fi(rev_ph)}","📈","u" if trend>=0 else "d")
 kcard(k3,"a","Orders · 30 Min",str(ord_30),f"{fi(rev_30)} revenue",f"avg {fi(rev_30/max(ord_30,1))}/order","📦")
@@ -287,11 +264,11 @@ kcard(k6,"b","Conv. Rate",f"{round(random.uniform(3.2,4.8),1)}%","Session avg",f
 
 # ── WEATHER CARDS ─────────────────────────────────────────────────────────────
 st.markdown('<div class="sec">🌦 WEATHER INTELLIGENCE · CITY SALES IMPACT</div>', unsafe_allow_html=True)
-wcols = st.columns(5)
+wcols=st.columns(5)
 for i,(city,reg,lat,lon) in enumerate(CITIES[:5]):
-    city_rev = df[df["city"]==city]["revenue"].sum()
-    city_ord = len(df[df["city"]==city])
-    wd = st.session_state.wc.get(city)
+    city_rev=df[df["city"]==city]["revenue"].sum()
+    city_ord=len(df[df["city"]==city])
+    wd=st.session_state.wc.get(city)
     if wd:
         ik=next((k for k in WIMPACT if k.lower() in wd["desc"].lower()),"Cloudy")
         ic,ip,icolor=WIMPACT[ik]
@@ -329,46 +306,27 @@ for cls,msg in alerts:
     st.markdown(f'<div class="arow {cls}">{msg}</div>',unsafe_allow_html=True)
 
 # ════════════════════════════════════════════════════════════════════
-# CHARTS
-# Key fix: time charts use time_layout(), category charts use cat_layout()
-# This stops the %H:%M tickformat from breaking non-time charts
+# CHARTS — all fully visible, no sleep blocking
 # ════════════════════════════════════════════════════════════════════
 st.markdown('<div class="sec">📊 REVENUE ANALYTICS</div>', unsafe_allow_html=True)
-ch1,ch2=st.columns([2.2,1])
 
+# ── ROW 1 ─────────────────────────────────────────────────────────
+ch1,ch2=st.columns([2.2,1])
 with ch1:
-    # ── CHART 1: Revenue timeline (TIME chart) ──────────────────────
     dft=df.copy()
     dft["b"]=dft["timestamp"].dt.floor("5min")
     rt=dft.groupby("b").agg(rev=("revenue","sum"),ord=("order_id","count")).reset_index().sort_values("b")
     rt["ma"]=rt["rev"].rolling(3,min_periods=1).mean()
-
     fig1=go.Figure()
-    fig1.add_trace(go.Scatter(
-        x=rt["b"], y=rt["rev"],
-        fill="tozeroy", fillcolor="rgba(0,200,100,0.10)",
-        line=dict(color="#00ff88",width=2.5),
-        mode="lines+markers",
+    fig1.add_trace(go.Scatter(x=rt["b"],y=rt["rev"],fill="tozeroy",fillcolor="rgba(0,200,100,.10)",
+        line=dict(color="#00ff88",width=2.5),mode="lines+markers",
         marker=dict(size=5,color="#00ff88",line=dict(width=1,color="#002a10")),
-        name="Revenue",
-        hovertemplate="<b>%{x|%H:%M}</b><br>₹%{y:,.0f}<extra></extra>",
-    ))
-    fig1.add_trace(go.Scatter(
-        x=rt["b"], y=rt["ma"],
-        line=dict(color="#ffaa00",width=2,dash="dot"),
-        mode="lines",
-        name="Trend (MA3)",
-        hovertemplate="Trend ₹%{y:,.0f}<extra></extra>",
-    ))
-    fig1.add_trace(go.Bar(
-        x=rt["b"], y=rt["ord"],
-        marker_color="rgba(0,180,255,0.22)",
-        marker_line_width=0,
-        name="Orders",
-        yaxis="y2",
-        hovertemplate="Orders: %{y}<extra></extra>",
-    ))
-    lo1=time_layout("REVENUE + ORDER VOLUME  (5-MIN BUCKETS)",310)
+        name="Revenue",hovertemplate="<b>%{x|%H:%M}</b><br>₹%{y:,.0f}<extra></extra>"))
+    fig1.add_trace(go.Scatter(x=rt["b"],y=rt["ma"],line=dict(color="#ffaa00",width=2,dash="dot"),
+        mode="lines",name="Trend (MA3)",hovertemplate="Trend ₹%{y:,.0f}<extra></extra>"))
+    fig1.add_trace(go.Bar(x=rt["b"],y=rt["ord"],marker_color="rgba(0,180,255,.22)",
+        marker_line_width=0,name="Orders",yaxis="y2",hovertemplate="Orders: %{y}<extra></extra>"))
+    lo1=L("REVENUE + ORDER VOLUME  (5-MIN BUCKETS)",310,tickfmt="%H:%M")
     lo1["yaxis2"]=dict(overlaying="y",side="right",showgrid=False,zeroline=False,
                        tickfont=dict(size=8,color="rgba(0,180,255,.5)"),rangemode="tozero")
     lo1["bargap"]=0.05
@@ -376,77 +334,62 @@ with ch1:
     st.plotly_chart(fig1,use_container_width=True)
 
 with ch2:
-    # ── CHART 2: Category donut (CATEGORY chart) ─────────────────────
     cr=df.groupby("category")["revenue"].sum().reset_index()
     CLR=["#00ff88","#00ccff","#ffaa00","#aa88ff","#ff8844","#ff5088"]
-    fig2=go.Figure(go.Pie(
-        labels=cr["category"],values=cr["revenue"],hole=0.65,
+    fig2=go.Figure(go.Pie(labels=cr["category"],values=cr["revenue"],hole=0.65,
         marker=dict(colors=CLR[:len(cr)],line=dict(color="#020408",width=3)),
         textfont=dict(size=9,family="Share Tech Mono",color="#c8e8c8"),
         hovertemplate="<b>%{label}</b><br>₹%{value:,.0f}<br>%{percent}<extra></extra>",
-        textposition="outside",
-    ))
-    lo2=cat_layout("CATEGORY REVENUE SPLIT",310)
+        textposition="outside"))
+    lo2=L("CATEGORY REVENUE SPLIT",310)
     lo2["showlegend"]=True
     lo2["annotations"]=[dict(text=f"<b>{top_cat[:8]}</b>",x=0.5,y=0.5,
                              font=dict(size=11,color="#00ff88",family="Orbitron"),showarrow=False)]
     fig2.update_layout(**lo2)
     st.plotly_chart(fig2,use_container_width=True)
 
+# ── ROW 2 ─────────────────────────────────────────────────────────
 ch3,ch4=st.columns(2)
 with ch3:
-    # ── CHART 3: City bar (CATEGORY chart) ───────────────────────────
     cir=df.groupby("city")["revenue"].sum().sort_values(ascending=True).reset_index()
-    fig3=go.Figure(go.Bar(
-        y=cir["city"], x=cir["revenue"], orientation="h",
+    fig3=go.Figure(go.Bar(y=cir["city"],x=cir["revenue"],orientation="h",
         marker=dict(color=cir["revenue"].tolist(),
-                    colorscale=[[0,"#002210"],[0.4,"#006640"],[1,"#00ff88"]],
-                    line=dict(width=0)),
-        text=[fi(v) for v in cir["revenue"]],
-        textposition="inside",
+                    colorscale=[[0,"#002210"],[0.4,"#006640"],[1,"#00ff88"]],line=dict(width=0)),
+        text=[fi(v) for v in cir["revenue"]],textposition="inside",
         textfont=dict(size=9,color="#003318"),
-        hovertemplate="<b>%{y}</b><br>₹%{x:,.0f}<extra></extra>",
-    ))
-    lo3=cat_layout("REVENUE BY CITY",280)
+        hovertemplate="<b>%{y}</b><br>₹%{x:,.0f}<extra></extra>"))
+    lo3=L("REVENUE BY CITY",280)
     lo3["yaxis"]["showgrid"]=False
     lo3["showlegend"]=False
     fig3.update_layout(**lo3)
     st.plotly_chart(fig3,use_container_width=True)
 
 with ch4:
-    # ── CHART 4: Weather bar (CATEGORY chart) ────────────────────────
     wr=df.groupby("weather_condition")["revenue"].sum().sort_values(ascending=False).reset_index()
     wcolors=["#00ff88" if WIMPACT.get(w,("n",))[0]=="boost" else "#ff5050" if WIMPACT.get(w,("n",))[0]=="hurt" else "#ffaa00" for w in wr["weather_condition"]]
-    fig4=go.Figure(go.Bar(
-        x=wr["weather_condition"], y=wr["revenue"],
+    fig4=go.Figure(go.Bar(x=wr["weather_condition"],y=wr["revenue"],
         marker=dict(color=wcolors,line=dict(width=0)),
-        text=[fi(v) for v in wr["revenue"]],
-        textposition="outside",
+        text=[fi(v) for v in wr["revenue"]],textposition="outside",
         textfont=dict(size=8,color="#8ab88a"),
-        hovertemplate="<b>%{x}</b><br>₹%{y:,.0f}<extra></extra>",
-    ))
-    lo4=cat_layout("REVENUE BY WEATHER CONDITION",280)
+        hovertemplate="<b>%{x}</b><br>₹%{y:,.0f}<extra></extra>"))
+    lo4=L("REVENUE BY WEATHER CONDITION",280)
     lo4["xaxis"]["tickangle"]=-30
     lo4["showlegend"]=False
     fig4.update_layout(**lo4)
     st.plotly_chart(fig4,use_container_width=True)
 
+# ── ROW 3 ─────────────────────────────────────────────────────────
 ch5,ch6=st.columns([1.6,1])
 with ch5:
-    # ── CHART 5: Heatmap (CATEGORY chart) ────────────────────────────
     dfh=df.copy()
     dfh["hour"]=dfh["timestamp"].dt.hour
     piv=dfh.groupby(["city","hour"])["revenue"].sum().reset_index().pivot(index="city",columns="hour",values="revenue").fillna(0)
-    gsc=[[0,"#020408"],[0.15,"#001a0d"],[0.4,"#004d20"],[0.7,"#00aa55"],[1,"#00ff88"]]
-    fig5=go.Figure(go.Heatmap(
-        z=piv.values,
-        x=[f"{h:02d}:00" for h in piv.columns],
-        y=piv.index.tolist(),
-        colorscale=gsc,
+    fig5=go.Figure(go.Heatmap(z=piv.values,
+        x=[f"{h:02d}:00" for h in piv.columns],y=piv.index.tolist(),
+        colorscale=[[0,"#020408"],[.15,"#001a0d"],[.4,"#004d20"],[.7,"#00aa55"],[1,"#00ff88"]],
         hovertemplate="<b>%{y}</b> · %{x}<br>₹%{z:,.0f}<extra></extra>",
-        colorbar=dict(tickfont=dict(size=8,color="rgba(0,200,100,.5)"),thickness=10,len=0.9),
-    ))
-    lo5=cat_layout("REVENUE HEATMAP · CITY × HOUR OF DAY",280)
+        colorbar=dict(tickfont=dict(size=8,color="rgba(0,200,100,.5)"),thickness=10,len=0.9)))
+    lo5=L("REVENUE HEATMAP · CITY × HOUR OF DAY",280)
     lo5["xaxis"]["showgrid"]=False
     lo5["yaxis"]["showgrid"]=False
     lo5["showlegend"]=False
@@ -454,7 +397,6 @@ with ch5:
     st.plotly_chart(fig5,use_container_width=True)
 
 with ch6:
-    # ── PRODUCT LEADERBOARD (HTML) ────────────────────────────────────
     st.markdown('<div class="sec" style="margin-top:.4rem;">🏆 PRODUCT LEADERBOARD</div>',unsafe_allow_html=True)
     pr=df.groupby(["product","category"])["revenue"].sum().sort_values(ascending=False).head(8).reset_index()
     mx=pr["revenue"].max()
@@ -462,18 +404,16 @@ with ch6:
         pct=(row["revenue"]/mx)*100
         st.markdown(f'<div class="prow"><div class="prnk">#{rank}</div><div style="flex:1;"><div class="pname">{row["product"]}</div><div class="pcat">{row["category"].upper()}</div><div class="pbg" style="margin-top:4px;"><div class="pfill" style="width:{pct:.0f}%;"></div></div></div><div class="prev">{fi(row["revenue"])}</div></div>',unsafe_allow_html=True)
 
+# ── ROW 4 ─────────────────────────────────────────────────────────
 ch7,ch8=st.columns(2)
 with ch7:
-    # ── CHART 6: Treemap (CATEGORY chart) ────────────────────────────
     rc3=df.groupby(["region","category"])["revenue"].sum().reset_index()
     fig6=px.treemap(rc3,path=["region","category"],values="revenue",color="revenue",
                     color_continuous_scale=[[0,"#001a0d"],[0.5,"#006640"],[1,"#00ff88"]])
-    fig6.update_traces(
-        textfont=dict(family="Share Tech Mono",size=10,color="#c8e8c8"),
-        hovertemplate="<b>%{label}</b><br>₹%{value:,.0f}<extra></extra>",
-        marker=dict(line=dict(color="#020408",width=2)),
-    )
-    lo6=cat_layout("REVENUE TREEMAP · REGION × CATEGORY",280)
+    fig6.update_traces(textfont=dict(family="Share Tech Mono",size=10,color="#c8e8c8"),
+                       hovertemplate="<b>%{label}</b><br>₹%{value:,.0f}<extra></extra>",
+                       marker=dict(line=dict(color="#020408",width=2)))
+    lo6=L("REVENUE TREEMAP · REGION × CATEGORY",280)
     lo6["showlegend"]=False
     lo6["margin"]=dict(l=4,r=4,t=32,b=4)
     lo6["coloraxis_showscale"]=False
@@ -481,28 +421,19 @@ with ch7:
     st.plotly_chart(fig6,use_container_width=True)
 
 with ch8:
-    # ── CHART 7: Hourly pattern (NUMERIC x-axis) ─────────────────────
     dfhr=df.copy()
     dfhr["hour"]=dfhr["timestamp"].dt.hour
     hr=dfhr.groupby("hour").agg(rev=("revenue","sum"),ord=("order_id","count")).reset_index()
     fig7=go.Figure()
-    fig7.add_trace(go.Scatter(
-        x=hr["hour"],y=hr["rev"],
-        fill="tozeroy",fillcolor="rgba(0,180,255,0.08)",
-        line=dict(color="#00ccff",width=2.5),
-        mode="lines+markers",marker=dict(size=5,color="#00ccff"),
-        name="Revenue",
-        hovertemplate="<b>%{x}:00</b><br>₹%{y:,.0f}<extra></extra>",
-    ))
-    fig7.add_trace(go.Scatter(
-        x=hr["hour"],y=hr["ord"],
-        fill="tozeroy",fillcolor="rgba(170,136,255,0.06)",
-        line=dict(color="#aa88ff",width=2,dash="dot"),
-        mode="lines+markers",marker=dict(size=4,color="#aa88ff"),
-        name="Orders",yaxis="y2",
-        hovertemplate="<b>%{x}:00</b><br>Orders: %{y}<extra></extra>",
-    ))
-    lo7=cat_layout("HOURLY REVENUE + ORDERS PATTERN",280)
+    fig7.add_trace(go.Scatter(x=hr["hour"],y=hr["rev"],fill="tozeroy",
+        fillcolor="rgba(0,180,255,.08)",line=dict(color="#00ccff",width=2.5),
+        mode="lines+markers",marker=dict(size=5,color="#00ccff"),name="Revenue",
+        hovertemplate="<b>%{x}:00</b><br>₹%{y:,.0f}<extra></extra>"))
+    fig7.add_trace(go.Scatter(x=hr["hour"],y=hr["ord"],fill="tozeroy",
+        fillcolor="rgba(170,136,255,.06)",line=dict(color="#aa88ff",width=2,dash="dot"),
+        mode="lines+markers",marker=dict(size=4,color="#aa88ff"),name="Orders",yaxis="y2",
+        hovertemplate="<b>%{x}:00</b><br>Orders: %{y}<extra></extra>"))
+    lo7=L("HOURLY REVENUE + ORDERS PATTERN",280)
     lo7["yaxis2"]=dict(overlaying="y",side="right",showgrid=False,zeroline=False,
                        tickfont=dict(size=8,color="rgba(170,136,255,.5)"),rangemode="tozero")
     lo7["xaxis"]["dtick"]=2
@@ -538,5 +469,5 @@ for col,(tag,val,desc) in zip([m1,m2,m3,m4],[
 
 st.markdown(f'<div class="ftr">REVENUE PULSE WAR ROOM · {st.session_state.tg} ORDERS GENERATED · AUTO-REFRESH 30s · {now_dt.strftime("%d %b %Y %H:%M:%S")}</div>',unsafe_allow_html=True)
 
-time.sleep(30)
-st.rerun()
+# ── AUTO REFRESH — browser-side, no blocking ──────────────────────────────────
+st.markdown('<meta http-equiv="refresh" content="30">', unsafe_allow_html=True)
