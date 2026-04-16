@@ -53,7 +53,7 @@ st.markdown("""
     }
     
     .kpi-label { font-family: 'Share Tech Mono'; color: #4a9abb; font-size: 0.75rem; letter-spacing: 1px; }
-    .kpi-value { font-family: 'Orbitron'; color: #00dcff; font-size: 2rem; font-weight: 700; margin-top: 5px; }
+    .kpi-value { font-family: 'Orbitron'; color: #00dcff; font-size: 1.8rem; font-weight: 700; margin-top: 5px; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -171,14 +171,16 @@ else:
     with k1: st.markdown(f'<div class="kpi-card"><div class="kpi-label">GROSS REV</div><div class="kpi-value">₹{df.Price.sum()/1e5:.2f}L</div></div>', unsafe_allow_html=True)
     with k2: st.markdown(f'<div class="kpi-card"><div class="kpi-label">VOL</div><div class="kpi-value">{len(df)}</div></div>', unsafe_allow_html=True)
     with k3: st.markdown(f'<div class="kpi-card"><div class="kpi-label">AOV</div><div class="kpi-value">₹{int(df.Price.mean()):,}</div></div>', unsafe_allow_html=True)
-    with k4: st.markdown(f'<div class="kpi-card"><div class="kpi-label">HOT CITY</div><div class="kpi-value">{df.City.mode()[0]}</div></div>', unsafe_allow_html=True)
+    
+    # 🏆 UPDATED LOGIC: TOP CATEGORY BY REVENUE 🏆
+    top_cat_name = df.groupby("Category")["Price"].sum().idxmax()
+    with k4: st.markdown(f'<div class="kpi-card"><div class="kpi-label">TOP CATEGORY (BY REV)</div><div class="kpi-value" style="font-size:1.4rem;">{top_cat_name}</div></div>', unsafe_allow_html=True)
 
     # 2. ANALYTICS ROW
     st.markdown('<div class="section-hdr">// PERFORMANCE ANALYTICS</div>', unsafe_allow_html=True)
     c1, c2 = st.columns([2, 1])
     
     with c1:
-        # Sort and cumulative logic protected by the 'if not df.empty' check
         df_plot = df.sort_values("DT")
         df_plot["CumSum"] = df_plot["Price"].cumsum()
         fig_ts = px.line(df_plot, x="DT", y="CumSum", markers=True, title="CUMULATIVE REVENUE TIMELINE")
@@ -216,7 +218,6 @@ else:
     col_f, col_l = st.columns([2, 1])
     
     with col_f:
-        # Weather logic only for the latest cities
         active_c = df.tail(12)["City"].unique()
         weather_map = {c: get_weather(c) for c in active_c}
         
