@@ -16,10 +16,42 @@ st.set_page_config(page_title="ULTIMATE SALES WAR ROOM", page_icon="🔥", layou
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&family=Orbitron:wght@700;900&display=swap');
-    html, body, [data-testid="stApp"] { background: #030b14; color: #c8d8e8; font-family: 'Rajdhani', sans-serif; }
-    .war-room-title { font-family: 'Orbitron', sans-serif; font-size: 2.2rem; font-weight: 900; color: #00dcff; text-shadow: 0 0 20px rgba(0,220,255,0.4); letter-spacing: 2px; }
-    .section-hdr { font-family: 'Share Tech Mono', monospace; font-size: .85rem; color: #4a9abb; text-transform: uppercase; border-left: 3px solid #ff4060; padding-left: 12px; margin: 30px 0 15px; letter-spacing: 2px; }
-    .kpi-card { background: linear-gradient(135deg, rgba(0,25,50,0.7) 0%, rgba(0,10,20,0.8) 100%); border: 1px solid rgba(0,220,255,0.2); border-radius: 4px; padding: 20px; text-align: center; }
+    
+    html, body, [data-testid="stApp"] { 
+        background: #030b14; 
+        color: #c8d8e8; 
+        font-family: 'Rajdhani', sans-serif; 
+    }
+    
+    .war-room-title { 
+        font-family: 'Orbitron', sans-serif; 
+        font-size: 2.2rem; 
+        font-weight: 900; 
+        color: #00dcff; 
+        text-shadow: 0 0 20px rgba(0,220,255,0.4); 
+        letter-spacing: 2px;
+    }
+    
+    .section-hdr { 
+        font-family: 'Share Tech Mono', monospace; 
+        font-size: .85rem; 
+        color: #4a9abb; 
+        text-transform: uppercase; 
+        border-left: 3px solid #ff4060; 
+        padding-left: 12px; 
+        margin: 30px 0 15px; 
+        letter-spacing: 2px;
+    }
+
+    .kpi-card {
+        background: linear-gradient(135deg, rgba(0,25,50,0.7) 0%, rgba(0,10,20,0.8) 100%);
+        border: 1px solid rgba(0,220,255,0.2);
+        border-radius: 4px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    }
+    
     .kpi-label { font-family: 'Share Tech Mono'; color: #4a9abb; font-size: 0.75rem; letter-spacing: 1px; }
     .kpi-value { font-family: 'Orbitron'; color: #00dcff; font-size: 2rem; font-weight: 700; margin-top: 5px; }
 </style>
@@ -37,7 +69,12 @@ PRODUCTS = {
     "Canon EOS R6 Mark II": (219000, 259000), "Nintendo Switch": (28000, 32000)
 }
 CITIES = ["Mumbai", "Delhi", "Bengaluru", "Hyderabad", "Chennai", "Pune", "Kolkata", "Ahmedabad", "Jaipur", "Surat"]
-CAT_MAP = {k: "Laptops" if any(x in k for x in ["MacBook", "Dell"]) else "Phones" if any(x in k for x in ["iPhone", "Samsung", "OnePlus"]) else "Audio" if any(x in k for x in ["Sony", "Bose"]) else "Tablets" if "iPad" in k else "TVs" if "TV" in k else "Wearables" if "Watch" in k else "Cameras" if "Canon" in k else "Gaming" for k in PRODUCTS.keys()}
+CAT_MAP = {k: "Laptops" if any(x in k for x in ["MacBook", "Dell"]) else 
+                "Phones" if any(x in k for x in ["iPhone", "Samsung", "OnePlus"]) else 
+                "Audio" if any(x in k for x in ["Sony", "Bose"]) else 
+                "Tablets" if "iPad" in k else "TVs" if "TV" in k else 
+                "Wearables" if "Watch" in k else "Cameras" if "Canon" in k else "Gaming" 
+                for k in PRODUCTS.keys()}
 
 # ─────────────────────────────────────────────
 #  STATE MANAGEMENT
@@ -54,6 +91,7 @@ if "sales_df" not in st.session_state:
             "Price": random.randint(PRODUCTS[p][0], PRODUCTS[p][1]), "City": random.choice(CITIES)
         })
     st.session_state.sales_df = pd.DataFrame(init_data)
+
 if "weather_cache" not in st.session_state:
     st.session_state.weather_cache = {}
 
@@ -78,107 +116,124 @@ def weather_condition(w):
     d, t = w.get("desc", ""), w.get("temp", 25)
     if any(x in d for x in ["rain", "drizzle", "thunder"]): return "rain"
     if t >= 35: return "heat"
-    if any(x in d for x in ["cloud", "mist", "haze", "overcast"]): return "cloudy"
+    if any(x in d for x in ["cloud", "mist", "haze"]): return "cloudy"
     return "clear"
 
 # ─────────────────────────────────────────────
-#  SIDEBAR: COMMAND CENTER
+#  SIDEBAR COMMANDS
 # ─────────────────────────────────────────────
 with st.sidebar:
-    st.markdown("### 🛠 COMMAND CENTER")
-    f_city = st.multiselect("Active Cities", options=CITIES, default=[])
+    st.markdown("### 🛠 FILTERS")
+    f_city = st.multiselect("Cities", options=CITIES, default=[])
     f_cat = st.multiselect("Categories", options=list(set(CAT_MAP.values())), default=[])
     
-    # Defensive price range
-    raw_df = st.session_state.sales_df
-    p_min = int(raw_df.Price.min()) if not raw_df.empty else 0
-    p_max = int(raw_df.Price.max()) if not raw_df.empty else 300000
-    f_price = st.slider("Price Threshold", p_min, p_max, (p_min, p_max))
+    current_min = int(st.session_state.sales_df.Price.min()) if not st.session_state.sales_df.empty else 0
+    current_max = int(st.session_state.sales_df.Price.max()) if not st.session_state.sales_df.empty else 300000
+    f_price = st.slider("Price Range", current_min, current_max, (current_min, current_max))
     
     st.markdown("---")
-    if st.button("🔴 RESET ALL DATA"):
+    if st.button("🔴 CLEAR SESSION"):
         st.session_state.sales_df = pd.DataFrame(columns=["Timestamp", "DT", "Product", "Category", "Price", "City"])
         st.rerun()
 
 # ─────────────────────────────────────────────
-#  DATA LOGIC
+#  LIVE DATA FLOW
 # ─────────────────────────────────────────────
 if time.time() - st.session_state.get('last_gen', 0) > 30:
-    new_batch = []
-    for _ in range(random.randint(2, 6)):
+    new_orders = []
+    for _ in range(random.randint(2, 5)):
         p = random.choice(list(PRODUCTS.keys()))
-        new_batch.append({
+        new_orders.append({
             "Timestamp": datetime.now().strftime("%H:%M:%S"),
             "DT": datetime.now(),
             "Product": p, "Category": CAT_MAP[p],
             "Price": random.randint(PRODUCTS[p][0], PRODUCTS[p][1]), "City": random.choice(CITIES)
         })
-    st.session_state.sales_df = pd.concat([st.session_state.sales_df, pd.DataFrame(new_batch)]).tail(300)
+    st.session_state.sales_df = pd.concat([st.session_state.sales_df, pd.DataFrame(new_orders)]).tail(200)
     st.session_state.last_gen = time.time()
 
+# Apply Filters
 df = st.session_state.sales_df.copy()
 if f_city: df = df[df.City.isin(f_city)]
 if f_cat: df = df[df.Category.isin(f_cat)]
 df = df[(df.Price >= f_price[0]) & (df.Price <= f_price[1])]
 
 # ─────────────────────────────────────────────
-#  MAIN UI
+#  MAIN DASHBOARD
 # ─────────────────────────────────────────────
 st.markdown('<div class="war-room-title">⚡ PRO SALES WAR ROOM</div>', unsafe_allow_html=True)
 
 if df.empty:
-    st.warning("⚠️ No data matches the current filters. Adjust your sidebar settings.")
+    st.warning("📡 No transactions found for selected filters. Waiting for data...")
 else:
-    # KPIs
+    # 1. KPI SECTION
     k1, k2, k3, k4 = st.columns(4)
-    with k1: st.markdown(f'<div class="kpi-card"><div class="kpi-label">GROSS REVENUE</div><div class="kpi-value">₹{df.Price.sum()/1e5:.2f}L</div></div>', unsafe_allow_html=True)
-    with k2: st.markdown(f'<div class="kpi-card"><div class="kpi-label">TOTAL VOLUME</div><div class="kpi-value">{len(df)}</div></div>', unsafe_allow_html=True)
+    with k1: st.markdown(f'<div class="kpi-card"><div class="kpi-label">GROSS REV</div><div class="kpi-value">₹{df.Price.sum()/1e5:.2f}L</div></div>', unsafe_allow_html=True)
+    with k2: st.markdown(f'<div class="kpi-card"><div class="kpi-label">VOL</div><div class="kpi-value">{len(df)}</div></div>', unsafe_allow_html=True)
     with k3: st.markdown(f'<div class="kpi-card"><div class="kpi-label">AOV</div><div class="kpi-value">₹{int(df.Price.mean()):,}</div></div>', unsafe_allow_html=True)
-    with k4: st.markdown(f'<div class="kpi-card"><div class="kpi-label">TOP CATEGORY</div><div class="kpi-value">{df.Category.mode()[0]}</div></div>', unsafe_allow_html=True)
+    with k4: st.markdown(f'<div class="kpi-card"><div class="kpi-label">HOT CITY</div><div class="kpi-value">{df.City.mode()[0]}</div></div>', unsafe_allow_html=True)
 
-    # Charts Row 1
-    st.markdown('<div class="section-hdr">// REVENUE PERFORMANCE</div>', unsafe_allow_html=True)
+    # 2. ANALYTICS ROW
+    st.markdown('<div class="section-hdr">// PERFORMANCE ANALYTICS</div>', unsafe_allow_html=True)
     c1, c2 = st.columns([2, 1])
+    
     with c1:
-        df_ts = df.sort_values("DT").assign(CumSum=df.sort_values("DT").Price.cumsum())
-        fig_ts = px.line(df_ts, x="DT", y="CumSum", markers=True, title="CUMULATIVE REVENUE TIMELINE")
+        # Sort and cumulative logic protected by the 'if not df.empty' check
+        df_plot = df.sort_values("DT")
+        df_plot["CumSum"] = df_plot["Price"].cumsum()
+        fig_ts = px.line(df_plot, x="DT", y="CumSum", markers=True, title="CUMULATIVE REVENUE TIMELINE")
         fig_ts.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color="#4a9abb", height=350)
         st.plotly_chart(fig_ts, use_container_width=True)
+        
     with c2:
         fig_pie = px.pie(df, values='Price', names='Category', hole=0.5, title="REVENUE BY CATEGORY")
         fig_pie.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color="#4a9abb", height=350, showlegend=False)
         st.plotly_chart(fig_pie, use_container_width=True)
 
-    # Charts Row 2
-    st.markdown('<div class="section-hdr">// DISTRIBUTION & GEOGRAPHY</div>', unsafe_allow_html=True)
-    c3, c4, c5 = st.columns([1.2, 1.2, 1])
+    # 3. ADVANCED ROW
+    st.markdown('<div class="section-hdr">// DISTRIBUTION & DENSITY</div>', unsafe_allow_html=True)
+    c3, c4, c5 = st.columns([1, 1, 1])
+    
     with c3:
         heat = df.pivot_table(index='City', columns='Category', values='Price', aggfunc='count').fillna(0)
-        fig_heat = px.imshow(heat, text_auto=True, title="ORDER DENSITY HEATMAP", color_continuous_scale="Blues")
-        fig_heat.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", height=350)
-        st.plotly_chart(fig_heat, use_container_width=True)
+        fig_h = px.imshow(heat, text_auto=True, title="ORDER HEATMAP", color_continuous_scale="Blues")
+        fig_h.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", height=350)
+        st.plotly_chart(fig_h, use_container_width=True)
+        
     with c4:
-        fig_box = px.box(df, x="Category", y="Price", color="Category", title="PRICE DISTRIBUTION")
-        fig_box.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", height=350, showlegend=False)
-        st.plotly_chart(fig_box, use_container_width=True)
+        fig_b = px.box(df, x="Category", y="Price", color="Category", title="PRICE BOXPLOT")
+        fig_b.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", height=350, showlegend=False)
+        st.plotly_chart(fig_b, use_container_width=True)
+        
     with c5:
-        city_data = df.groupby("City")["Price"].sum().sort_values()
-        fig_city = px.bar(city_data, orientation='h', title="CITY REVENUE")
-        fig_city.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", height=350)
-        st.plotly_chart(fig_city, use_container_width=True)
+        city_rev = df.groupby("City")["Price"].sum().sort_values()
+        fig_bar = px.bar(city_rev, orientation='h', title="CITY REVENUE")
+        fig_bar.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", height=350)
+        st.plotly_chart(fig_bar, use_container_width=True)
 
-    # Live Feed
-    st.markdown('<div class="section-hdr">// LIVE FEED</div>', unsafe_allow_html=True)
-    col_t, col_l = st.columns([2, 1])
-    with col_t:
+    # 4. LIVE FEED
+    st.markdown('<div class="section-hdr">// LIVE FEED & LEADERBOARD</div>', unsafe_allow_html=True)
+    col_f, col_l = st.columns([2, 1])
+    
+    with col_f:
+        # Weather logic only for the latest cities
         active_c = df.tail(12)["City"].unique()
         weather_map = {c: get_weather(c) for c in active_c}
+        
         feed_df = df.sort_values("DT", ascending=False).head(12).copy()
-        feed_df["Weather"] = feed_df["City"].apply(lambda c: {"rain": "🌧", "heat": "🔥", "clear": "☀", "cloudy": "☁"}.get(weather_condition(weather_map.get(c, {})), "❓"))
+        feed_df["Weather"] = feed_df["City"].apply(lambda c: {
+            "rain": "🌧", "heat": "🔥", "clear": "☀", "cloudy": "☁"
+        }.get(weather_condition(weather_map.get(c, {})), "❓"))
+        
         feed_df["Price"] = feed_df["Price"].apply(lambda x: f"₹{x:,}")
         st.dataframe(feed_df[["Timestamp", "Product", "Price", "City", "Weather"]], use_container_width=True, hide_index=True)
+
     with col_l:
+        st.markdown("<p style='font-size:0.8rem; color:#4a9abb;'>TOP PRODUCTS (VOL)</p>", unsafe_allow_html=True)
         st.table(df.groupby("Product").size().sort_values(ascending=False).head(8).reset_index(name='Orders'))
+
+    with st.expander("📋 RAW DATA EXPLORER"):
+        st.dataframe(df.sort_values("DT", ascending=False))
 
 time.sleep(30)
 st.rerun()
