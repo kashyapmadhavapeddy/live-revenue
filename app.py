@@ -492,11 +492,14 @@ if len(df) > 0:
 # ─────────────────────────────────────────────
 k1, k2, k3, k4, k5 = st.columns(5)
 
-def kpi(label, value, delta=None, delta_type="neut"):
+def kpi(label, value, delta=None, delta_type="neut", is_currency=False):
     delta_html = ""
     if delta is not None:
         arrow = "▲" if delta >= 0 else "▼"
-        delta_html = f'<div class="kpi-delta {delta_type}">{arrow} {delta}</div>'
+        # Format the delta display here
+        fmt_delta = f"₹{abs(delta):,}" if is_currency else f"{abs(delta):,}"
+        delta_html = f'<div class="kpi-delta {delta_type}">{arrow} {fmt_delta}</div>'
+    
     return f"""
     <div class="kpi-card">
       <div class="kpi-label">{label}</div>
@@ -507,14 +510,22 @@ def kpi(label, value, delta=None, delta_type="neut"):
 
 with k1:
     rev_d_type = "up" if rev_delta >= 0 else "down"
-    st.markdown(kpi("Total Revenue",
-                    f"₹{total_revenue/1e5:.2f}L",
-                    f"₹{rev_delta:,.0f}", rev_d_type), unsafe_allow_html=True)
+    st.markdown(kpi(
+        "Total Revenue", 
+        f"₹{total_revenue/1e5:.2f}L", 
+        rev_delta,      # Pass number, not f-string
+        rev_d_type,
+        is_currency=True
+    ), unsafe_allow_html=True)
+
 with k2:
     vol_d_type = "up" if vol_delta >= 0 else "down"
-    st.markdown(kpi("Order Volume",
-                    f"{order_volume:,}",
-                    f"+{vol_delta} orders", vol_d_type), unsafe_allow_html=True)
+    st.markdown(kpi(
+        "Order Volume", 
+        f"{order_volume:,}", 
+        vol_delta,      # Pass number, not f-string
+        vol_d_type
+    ), unsafe_allow_html=True)
 with k3:
     st.markdown(kpi("Avg Order Value", f"₹{avg_order_value:,}"), unsafe_allow_html=True)
 with k4:
