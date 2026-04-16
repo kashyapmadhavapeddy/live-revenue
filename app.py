@@ -344,10 +344,13 @@ def get_weather(city: str) -> dict:
 
 
 def weather_condition(w: dict) -> str:
-    if not w["ok"]:
+    # ADD THIS LINE: check if dictionary is empty or missing the 'ok' key
+    if not w or "ok" not in w or not w["ok"]:
         return "unknown"
-    d = w["desc"]
-    t = w["temp"] if w["temp"] is not None else 25
+        
+    d = w.get("desc", "")
+    t = w.get("temp", 25)
+    
     if any(x in d for x in ["rain", "drizzle", "shower", "thunderstorm"]):
         return "rain"
     if t >= 35:
