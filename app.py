@@ -413,8 +413,8 @@ st.session_state.order_vol_prev     = order_volume
 #  WEATHER FOR ACTIVE CITIES
 # ─────────────────────────────────────────────
 active_cities = df["City"].unique().tolist() if len(df) else CITIES[:5]
-weather_data  = {city: get_weather(city) for city in active_cities[:8]}
-
+# We remove the [:8] limit so that all cities in feed get weather data
+weather_data  = {city: get_weather(city) for city in active_cities}
 # ─────────────────────────────────────────────
 #  WEATHER IMPACT ANALYSIS
 # ─────────────────────────────────────────────
