@@ -50,15 +50,32 @@ if "weather_cache" not in st.session_state:
 # ─────────────────────────────────────────────
 def get_weather(city):
     cache = st.session_state.weather_cache
-    if city in cache and (time.time() - cache[city]['t']) < 600: return cache[city]['data']
+    
+    # Check if city is in cache AND has the 't' (timestamp) and 'data' keys
+    if city in cache and isinstance(cache[city], dict):
+        if 't' in cache[city] and 'data' in cache[city]:
+            if (time.time() - cache[city]['t']) < 600:
+                return cache[city]['data']
+    
     try:
         api_key = st.secrets["WEATHER_API_KEY"]
         url = f"https://api.openweathermap.org/data/2.5/weather?q={city},IN&appid={api_key}&units=metric"
         r = requests.get(url, timeout=3).json()
-        res = {"desc": r["weather"][0]["description"].lower(), "temp": r["main"]["temp"], "ok": True}
-        cache[city] = {'t': time.time(), 'data': res}
-        return res
-    except: return {"ok": False}
+        
+        # Ensure we got a successful response from the API
+        if "weather" in r and "main" in r:
+            res = {
+                "desc": r["weather"][0]["description"].lower(),
+                "temp": r["main"]["temp"],
+                "ok": True
+            }
+            # Save with the correct structure
+            cache[city] = {'t': time.time(), 'data': res}
+            return res
+        else:
+            return {"ok": False}
+    except Exception as e:
+        return {"ok": False}
 
 def weather_condition(w):
     if not w.get("ok"): return "unknown"
